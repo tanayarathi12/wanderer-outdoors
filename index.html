@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title data-edit="site.title">The Wanderer Outdoors</title>
+<meta name="description" content="Adventure and outdoor activities — winter & summer camps, treks, tours, outings and corporate events across the Indian Himalayas and Sahyadris." />
+<meta name="theme-color" content="#1F4D36" />
+<meta name="author" content="The Wanderer Outdoors" />
+<meta name="robots" content="index, follow" />
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="The Wanderer Outdoors" />
+<meta property="og:title" content="The Wanderer Outdoors — Live. Travel. Explore." />
+<meta property="og:description" content="Hand-crafted Himalayan & Sahyadri treks, winter & summer camps, tours, day outings and corporate offsites." />
+<meta property="og:url" content="https://www.wandereroutdoors.in/" />
+<meta property="og:image" content="https://www.wandereroutdoors.in/assets/logo.png" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="The Wanderer Outdoors" />
+<meta name="twitter:description" content="Hand-crafted Himalayan & Sahyadri treks, camps, tours and corporate offsites." />
+<meta name="twitter:image" content="https://www.wandereroutdoors.in/assets/logo.png" />
+
+<link rel="canonical" id="canonical" href="https://www.wandereroutdoors.in/" />
+<link rel="icon" href="assets/logo.png" type="image/png" />
+<link rel="stylesheet" href="styles.css" />
+
+<!-- Keep canonical / og:url in sync with the current SPA route -->
+<script>
+  (function () {
+    function upd() {
+      var base = location.href.split('#')[0];
+      var h = location.hash || '';
+      var full = base + h;
+      var c = document.getElementById('canonical'); if (c) c.setAttribute('href', full);
+      var og = document.querySelector('meta[property="og:url"]'); if (og) og.setAttribute('content', full);
+    }
+    window.addEventListener('hashchange', upd);
+    if (document.readyState !== 'loading') upd(); else document.addEventListener('DOMContentLoaded', upd);
+  })();
+</script>
+
+<!-- Structured data (SEO) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TravelAgency",
+  "name": "The Wanderer Outdoors",
+  "url": "https://www.wandereroutdoors.in",
+  "logo": "https://www.wandereroutdoors.in/assets/logo.png",
+  "image": "https://www.wandereroutdoors.in/assets/logo.png",
+  "description": "Hand-crafted Himalayan & Sahyadri treks, winter & summer camps, tours, day outings and corporate offsites.",
+  "telephone": "+917387778296",
+  "email": "hello@wandereroutdoors.in",
+  "address": { "@type": "PostalAddress", "addressRegion": "Maharashtra", "addressCountry": "IN" },
+  "sameAs": ["https://www.instagram.com/the_wanderer_outdoors/"]
+}
+</script>
+</head>
+<body>
+
+<!-- ===== Top Bar / Header ===== -->
+<header class="topbar">
+  <div class="wrap nav">
+    <a class="brand" href="/" data-nav="home">
+      <img id="brandLogo" src="assets/logo.png" alt="Wanderer Outdoors logo" />
+      <span class="brand-text">
+        <strong data-edit="brand.name">The Wanderer Outdoors</strong>
+        <small data-edit="brand.tagline">Adventure · Treks · Outdoors</small>
+      </span>
+    </a>
+    <nav class="primary-nav" id="primaryNav">
+      <!-- Populated dynamically from state.views by app.js -->
+      <a href="/treks" data-nav="treks">Treks</a>
+      <a href="/winter-camps" data-nav="winter">Winter</a>
+      <a href="/summer-camps" data-nav="summer">Summer</a>
+      <a href="/tours" data-nav="tours">Tours</a>
+      <a href="/outings" data-nav="outings">Outings</a>
+      <a href="/corporate" data-nav="corporate">Corporate</a>
+      <a href="/gallery" data-nav="gallery">Highlights</a>
+      <a href="/reviews" data-nav="reviews">Reviews</a>
+      <a href="/blog" data-nav="blog">Blog</a>
+      <a href="/faq" data-nav="faq">FAQ</a>
+      <a href="/booking" data-nav="booking" class="nav-book">Book Now</a>
+      <a href="/contact" data-nav="contact">Contact</a>
+    </nav>
+    <button id="navToggle" class="nav-toggle" aria-label="Menu">&#9776;</button>
+  </div>
+</header>
+
+<!-- ===== Main SPA Container ===== -->
+<main id="appMain">
+  <!-- Dynamic full-page views are rendered here by app.js -->
+</main>
+
+<!-- ===== Hidden template / master booking form ===== -->
+<div id="bookingFormMaster" style="display:none;">
+  <section class="booking" id="booking">
+    <div class="wrap">
+      <div class="booking-head">
+        <span class="kicker" data-edit="booking.kicker">Book Your Adventure</span>
+        <h2 data-edit="booking.title">Reserve your spot.</h2>
+        <p data-edit="booking.intro">Fill in the details and we'll confirm your booking on WhatsApp within 24 hours.</p>
+      </div>
+
+      <div class="booking-card" id="bookingCard">
+        <form id="bookingForm" class="form-grid" novalidate>
+          <div class="field" data-field="fullName">
+            <label for="bkName">Full name<span class="req">*</span></label>
+            <input id="bkName" name="fullName" type="text" placeholder="e.g. Aditya Sharma" autocomplete="name" />
+            <div class="err"></div>
+          </div>
+          <div class="field" data-field="age">
+            <label for="bkAge">Age<span class="req">*</span></label>
+            <input id="bkAge" name="age" type="number" min="1" max="120" placeholder="e.g. 27" />
+            <div class="err"></div>
+          </div>
+          <div class="field" data-field="email">
+            <label for="bkEmail">Email<span class="req">*</span></label>
+            <input id="bkEmail" name="email" type="email" placeholder="you@example.com" autocomplete="email" />
+            <div class="err"></div>
+          </div>
+          <div class="field" data-field="phone">
+            <label for="bkPhone">Phone<span class="req">*</span></label>
+            <input id="bkPhone" name="phone" type="tel" placeholder="10-digit mobile number" autocomplete="tel" />
+            <div class="err"></div>
+          </div>
+          <div class="field" data-field="date">
+            <label for="bkDate">Preferred date<span class="req">*</span></label>
+            <input id="bkDate" name="date" type="date" />
+            <div class="err"></div>
+          </div>
+          <div class="field" data-field="people">
+            <label for="bkPeople">Total people<span class="req">*</span></label>
+            <input id="bkPeople" name="people" type="number" min="1" max="100" placeholder="e.g. 2" />
+            <div class="err"></div>
+          </div>
+          <div class="field" data-field="type">
+            <label for="bkType">Adventure type<span class="req">*</span></label>
+            <select id="bkType" name="type"></select>
+            <div class="err"></div>
+          </div>
+          <div class="field" data-field="pkg">
+            <label for="bkPkg">Specific package<span class="req">*</span></label>
+            <select id="bkPkg" name="pkg"></select>
+            <div class="err"></div>
+          </div>
+          <div class="field full" data-field="notes">
+            <label for="bkNotes">Anything we should know? <span class="muted">(optional)</span></label>
+            <textarea id="bkNotes" name="notes" placeholder="Dietary needs, pickup point, fitness concerns…"></textarea>
+            <div class="err"></div>
+          </div>
+
+          <!-- ===== Dynamic Configured Payment Block ===== -->
+          <div class="pay-block" id="payBlock">
+            <div class="pay-head">
+              <h4 id="payBlockHeading">Payment Options</h4>
+            </div>
+            <div class="pay-body">
+              <div class="pay-choice" id="payChoiceGroup">
+                <!-- Dynamically populated based on selected adventure item settings -->
+                <label id="payChoiceUpiLabel"><input type="radio" name="payMethod" value="UPI" checked /> Pay with UPI / QR Code</label>
+                <label id="payChoiceCashLabel"><input type="radio" name="payMethod" value="Cash" /> Pay with Cash (on trip day)</label>
+              </div>
+
+              <!-- UPI Details (displayed when UPI is selected) -->
+              <div id="upiDetailBox" class="upi-detail-box" style="margin-top:14px;padding:14px;background:var(--bg-soft);border-radius:10px;border:1px solid var(--line);">
+                <div id="upiAmountNote" style="font-weight:700;color:var(--forest);margin-bottom:8px;"></div>
+                <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+                  <div id="upiQrWrap" style="text-align:center;">
+                    <img id="upiQrImg" class="payment-qr-image" src="" alt="UPI QR Code" style="width:min(100%,220px);height:auto;aspect-ratio:1/1;max-width:100%;object-fit:contain;background:#fff;padding:8px;border-radius:10px;border:1px solid #ddd;display:none;margin-inline:auto;" />
+                  </div>
+                  <div style="flex:1;min-width:200px;">
+                    <div><strong>UPI ID:</strong> <code id="upiIdDisplay" style="background:#fff;padding:2px 6px;border-radius:4px;color:var(--ember);">7387778296@upi</code></div>
+                    <div id="upiLinkWrap" style="margin-top:8px;display:none;">
+                      <a id="upiPayLinkBtn" href="#" class="btn-ghost mini" style="display:inline-block;text-decoration:none;font-weight:700;color:var(--forest);" target="_blank" rel="noopener">🔗 Open UPI App / Link</a>
+                    </div>
+                    <p id="upiCustomInstructions" style="font-size:12.5px;color:var(--muted);margin:8px 0 0;line-height:1.4;"></p>
+                  </div>
+                </div>
+                <div style="margin-top:12px;">
+                  <label for="bkTxnRef" style="display:block;font-size:12.5px;font-weight:600;margin-bottom:4px;">UPI Reference / UTR Number (optional if paying now):</label>
+                  <input type="text" id="bkTxnRef" name="txn_ref" placeholder="e.g. 429381029384" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;" />
+                </div>
+                <p style="font-size:11.5px;color:var(--muted);margin:8px 0 0;">
+                  ℹ Note: Booking will be marked as <strong>Verification Pending</strong> until verified by our coordinator.
+                </p>
+              </div>
+
+              <!-- Cash Details (displayed when Cash is selected) -->
+              <div id="cashDetailBox" class="cash-detail-box" style="display:none;margin-top:14px;padding:14px;background:var(--bg-soft);border-radius:10px;border:1px solid var(--line);">
+                <p style="margin:0;font-size:13px;color:var(--forest-dark);font-weight:600;">
+                  💵 Cash Payment Selected — Payable on trip day.
+                </p>
+                <p style="margin:6px 0 0;font-size:12.5px;color:var(--muted);">
+                  Your booking acknowledgement will state <strong>PAYMENT PENDING — CASH PAYMENT DUE</strong> until recorded by our trek coordinator.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="booking-actions">
+            <button type="submit" class="submit-btn" id="confirmBookingBtn">Confirm Booking</button>
+            <span class="skip-note">Or message our coordinators directly on
+              <a class="wa-inline" id="bookingWa" href="https://wa.me/917387778296" target="_blank" rel="noopener">WhatsApp 7387778296</a>
+            </span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ===== Printable Branded Receipt Modal ===== -->
+<div id="receiptModal" class="receipt-modal-scrim" aria-hidden="true">
+  <div class="receipt-sheet" id="receiptSheet">
+    <button class="receipt-close" id="receiptCloseBtn" aria-label="Close receipt">&times;</button>
+    <div class="receipt-header">
+      <div class="receipt-brand">
+        <strong>The Wanderer Outdoors</strong>
+        <small>Live · Travel · Explore · wandereroutdoors.in</small>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;">+91 7387778296 · hello@wandereroutdoors.in</div>
+      </div>
+      <div class="receipt-meta">
+        <span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:700;color:var(--muted);">Booking Receipt</span>
+        <strong id="rcptRef">WO-2026-000000</strong>
+        <div id="rcptDate" style="font-size:12px;margin-top:2px;"></div>
+      </div>
+    </div>
+
+    <table class="receipt-table">
+      <tbody>
+        <tr><th>Traveller Name</th><td id="rcptName">—</td></tr>
+        <tr><th>Phone &amp; Email</th><td id="rcptContact">—</td></tr>
+        <tr><th>Adventure / Package</th><td id="rcptPackage" style="font-weight:700;color:var(--forest);">—</td></tr>
+        <tr><th>Category</th><td id="rcptType">—</td></tr>
+        <tr><th>Travel Date</th><td id="rcptTripDate">—</td></tr>
+        <tr><th>Participants</th><td id="rcptPeople">—</td></tr>
+        <tr><th>Payment Method</th><td id="rcptPay">—</td></tr>
+        <tr id="rcptTxnRow" style="display:none;"><th>Transaction Ref</th><td id="rcptTxn">—</td></tr>
+        <tr><th>Payment Status</th><td><span id="rcptStatus" class="receipt-status-tag status-verif">PAYMENT VERIFICATION PENDING — NOT YET CONFIRMED AS PAID</span></td></tr>
+      </tbody>
+    </table>
+
+    <div class="receipt-note" id="rcptNoteBox">
+      <strong>Important Booking Acknowledgement:</strong>
+      <span id="rcptNoteText">This official receipt confirms your booking submission with The Wanderer Outdoors.</span>
+    </div>
+
+    <div class="receipt-actions">
+      <button class="btn-ghost" id="receiptDownloadPdfBtn" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">⬇ Download PDF</button>
+      <button class="btn-ghost" id="receiptSharePdfBtn" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">💬 Share PDF on WhatsApp</button>
+      <a class="btn-ghost" id="receiptWaBtn" href="#" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">✉ WhatsApp (text)</a>
+      <button class="btn-ghost" id="receiptPrintBtn">🖨 Print / Save PDF</button>
+      <button class="btn-primary" id="receiptDoneBtn">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Footer ===== -->
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div>
+      <p><span data-edit="footer.copy">&copy; <span id="year"></span> The Wanderer Outdoors. All rights reserved.</span></p>
+      <p class="muted">Live. Travel. Explore. — Hand-crafted Sahyadri &amp; Himalayan outdoor experiences.</p>
+    </div>
+    <div style="text-align:right;">
+      <p style="margin:0 0 4px;"><a id="footerWhatsAppLink" href="https://wa.me/917387778296" target="_blank" rel="noopener" style="color:var(--forest);font-weight:700;">WhatsApp: +91 7387778296</a></p>
+      <p style="margin:0;"><a id="footerEmailLink" href="mailto:hello@wandereroutdoors.in" style="color:var(--muted);">hello@wandereroutdoors.in</a></p>
+    </div>
+  </div>
+</footer>
+
+<!-- Control Room is deployed with this site at /admin/; no public footer edit link. -->
+
+<!-- ===== Floating WhatsApp button ===== -->
+<a class="wa-float" href="https://wa.me/917387778296" target="_blank" rel="noopener" aria-label="Chat on WhatsApp" title="WhatsApp 7387778296">
+  <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16.04 4C9.96 4 5.02 8.94 5.02 15.02c0 2.2.6 4.26 1.64 6.02L5 28l7.1-1.62a11 11 0 0 0 3.94.72h.01C22.12 27.1 27 22.15 27 16.08 27 9.98 22.1 4 16.04 4zm0 2.2c3.83 0 6.94 3.12 6.94 6.95 0 3.83-3.11 6.94-6.94 6.94-1.2 0-2.36-.3-3.37-.87l-.48-.27-4.03 1.03 1.08-3.93-.31-.5a6.9 6.9 0 0 1-1.06-3.7c0-3.83 3.11-6.65 7.17-6.65zM12.9 10.3c-.2 0-.5.07-.76.36-.27.28-1.02 1-.99 2.43.03 1.44 1.05 2.83 1.2 3.03.14.19 2.02 3.3 5.02 4.5 2.48.99 2.99.79 3.53.74.54-.05 1.75-.72 2-1.41.25-.69.25-1.28.18-1.4-.07-.13-.26-.2-.54-.35-.28-.14-1.65-.81-1.9-.9-.26-.09-.44-.14-.63.14-.19.28-.72.9-.89 1.08-.16.19-.33.21-.61.07-.28-.14-1.18-.44-2.25-1.39-.83-.74-1.39-1.66-1.55-1.94-.16-.28-.02-.43.12-.57.13-.13.28-.33.42-.5.14-.16.19-.28.28-.47.1-.19.05-.35-.02-.5-.07-.14-.62-1.55-.87-2.1-.22-.55-.45-.46-.62-.47l-.56-.01z"/></svg>
+</a>
+
+<!-- ===== Admin Toolbar (Admin Mode Only) ===== -->
+<div id="adminBar" class="admin-bar" style="display:none;">
+  <div class="wrap admin-bar-inner">
+    <span class="dot"></span>
+    <strong>Admin mode</strong>
+    <span class="muted">Click text to edit · Changes save to Supabase · Only authorized editors can access.</span>
+    <span id="syncStatus" style="font-weight:600"></span>
+    <span class="spacer"></span>
+    <a id="controlRoomBtn" class="accent" href="admin/" style="text-decoration:none;padding:9px 14px;border-radius:999px;background:#1F4D36;color:#fff;font-weight:700;cursor:pointer;">Control Room ▸</a>
+    <button id="themeBtn" class="accent">Theme &amp; text</button>
+    <button id="syncBtn">Sync to site</button>
+    <button id="bookingsBtn">Bookings</button>
+    <button id="lockBtn">Site lock</button>
+    <button id="inviteBtn">Invite editor</button>
+    <button id="passcodeBtn">Change password</button>
+    <button id="exportJsonBtn">Export JSON</button>
+    <button id="importJsonBtn">Import JSON</button>
+    <button id="exitAdminBtn">Exit admin</button>
+  </div>
+</div>
+
+<!-- ===== Lightbox / Viewer ===== -->
+<div id="lightbox" class="lightbox" aria-hidden="true">
+  <button class="lb-close" aria-label="Close">&times;</button>
+  <button class="lb-prev" aria-label="Previous">&#10094;</button>
+  <button class="lb-next" aria-label="Next">&#10095;</button>
+  <div class="lb-content"></div>
+  <div class="lb-caption"></div>
+</div>
+
+<!-- ===== Hidden file input ===== -->
+<input type="file" id="filePicker" accept="image/*,video/*" style="display:none" />
+
+<!-- ===== Theme & typography settings panel ===== -->
+<div id="themePanel" class="theme-panel" aria-hidden="true">
+  <div class="tp-head">
+    <div>
+      <h3>Theme &amp; text</h3>
+      <p class="muted">Colours and typography for the whole site — or per section.</p>
+    </div>
+    <button id="tpClose" class="tp-close" aria-label="Close settings">&times;</button>
+  </div>
+  <div class="tp-body" id="tpBody"><!-- built by app.js --></div>
+  <div class="tp-foot">
+    <button id="tpReset" class="btn-ghost">Reset to preset</button>
+    <span class="spacer"></span>
+    <button id="tpDone" class="btn-primary">Done</button>
+  </div>
+</div>
+<div id="tpScrim" class="tp-scrim"></div>
+
+<!-- ===== Bookings inbox ===== -->
+<div id="bkPanel" class="theme-panel" aria-hidden="true">
+  <div class="tp-head">
+    <div>
+      <h3>Booking enquiries</h3>
+      <p class="muted">Everyone who confirmed a booking on the site.</p>
+    </div>
+    <button id="bkpClose" class="tp-close" aria-label="Close">&times;</button>
+  </div>
+  <div class="tp-body" id="bkpBody"></div>
+  <div class="tp-foot">
+    <button id="bkpCsv" class="btn-ghost">Download CSV</button>
+    <span class="spacer"></span>
+    <button id="bkpRefresh" class="btn-ghost">Refresh</button>
+    <button id="bkpDone" class="btn-primary">Done</button>
+  </div>
+</div>
+<div id="bkpScrim" class="tp-scrim"></div>
+
+<!-- ===== Modals ===== -->
+<div id="modal" class="modal" aria-hidden="true">
+  <div class="modal-card">
+    <h3 id="modalTitle">Title</h3>
+    <div id="modalBody"></div>
+    <div class="modal-actions">
+      <button id="modalCancel" class="btn-ghost">Cancel</button>
+      <button id="modalOk" class="btn-primary">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Backend: Supabase CDN, Config, Backend, Defaults, App -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/backend.js"></script>
+<script src="assets/js/defaults.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+/* The Wanderer Outdoors — Control Room (private admin) */
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  background: #0f1410; color: #e9efe9; font-size: 14px;
+}
+a { color: #6cc28f; }
+
+/* ---------------- Login ---------------- */
+.login-wrap {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.login-card {
+  width: 100%; max-width: 380px; background: #18201a; border: 1px solid #25312a;
+  border-radius: 16px; padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,.4);
+}
+.login-card h1 { font-size: 20px; margin: 0 0 4px; }
+.login-card .brand { color: #d9582b; font-weight: 700; letter-spacing: .3px; }
+.login-card p.sub { color: #9fb0a3; margin: 0 0 20px; font-size: 13px; }
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 12px; color: #9fb0a3; margin-bottom: 6px; }
+.field input, .field select, .field textarea {
+  width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid #2c3a31;
+  background: #0f1712; color: #e9efe9; font-size: 14px;
+}
+.btn {
+  border: none; border-radius: 999px; padding: 11px 16px; font-weight: 700;
+  cursor: pointer; font-size: 14px;
+}
+.btn-primary { background: #d9582b; color: #fff; }
+.btn-primary:hover { background: #e6693c; }
+.btn-ghost { background: transparent; color: #cfe0d4; border: 1px solid #2c3a31; }
+.btn-ghost:hover { border-color: #3c4d41; }
+.btn-danger { background: #7f1d1d; color: #fff; }
+.btn-danger:hover { background: #9b2525; }
+.btn-success { background: #25D366; color: #fff; border: none; }
+.btn-success:hover { background: #20bd5a; }
+.login-msg { margin-top: 12px; min-height: 16px; font-size: 13px; color: #f87171; }
+.login-hint { margin-top: 14px; font-size: 12px; color: #9fb0a3; line-height: 1.5; }
+
+/* ---------------- App shell ---------------- */
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 230px; flex: 0 0 230px; background: #131a14; border-right: 1px solid #25312a;
+  padding: 18px 12px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.sidebar .logo { font-weight: 800; color: #d9582b; padding: 6px 10px 16px; font-size: 16px; }
+.sidebar .nav-group { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #6f8474; margin: 14px 10px 6px; }
+.sidebar button.nav {
+  display: block; width: 100%; text-align: left; background: transparent; border: none;
+  color: #cfe0d4; padding: 9px 10px; border-radius: 9px; cursor: pointer; font-size: 13.5px;
+}
+.sidebar button.nav:hover { background: #1b251d; }
+.sidebar button.nav.active { background: #1f4d36; color: #fff; }
+
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.topbar {
+  position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 12px;
+  padding: 12px 20px; background: #131a14; border-bottom: 1px solid #25312a;
+}
+.topbar h2 { font-size: 15px; margin: 0; flex: 1; }
+.topbar .who { font-size: 12px; color: #9fb0a3; }
+.panel { padding: 22px; max-width: 980px; width: 100%; }
+
+.card {
+  background: #18201a; border: 1px solid #25312a; border-radius: 14px; padding: 18px;
+  margin-bottom: 18px;
+}
+.card h3 { margin: 0 0 14px; font-size: 15px; }
+.card .row { display: flex; flex-wrap: wrap; gap: 14px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+@media (max-width: 720px){ .grid2,.grid3{ grid-template-columns: 1fr; } .sidebar{ width: 64px; } .sidebar .label{ display:none; } }
+
+.cfgwarn { background: #3a2a12; border: 1px solid #6b4a1c; color: #ffd9a8; padding: 16px; border-radius: 12px; }
+
+/* form bits inside cards */
+.inline { display: flex; align-items: center; gap: 10px; }
+.inline input[type=color]{ width: 42px; height: 34px; padding: 2px; border: 1px solid #2c3a31; border-radius: 8px; background:#0f1712; }
+.inline input[type=text], .inline input[type=number], .inline select {
+  flex: 1; padding: 9px 10px; border-radius: 9px; border: 1px solid #2c3a31; background: #0f1712; color:#e9efe9;
+}
+.tip { font-size: 12px; color: #9fb0a3; margin: 4px 0 0; }
+
+/* image field */
+.imgfield { display: flex; gap: 12px; align-items: flex-start; }
+.imgfield img { width: 110px; height: 80px; object-fit: cover; border-radius: 10px; border: 1px solid #2c3a31; background:#0f1712; }
+.imgfield .controls { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.imgfield input[type=text]{ padding: 9px 10px; border-radius: 9px; border:1px solid #2c3a31; background:#0f1712; color:#e9efe9; }
+
+/* lists (items / gallery / reviews) */
+.list-row { display: flex; gap: 8px; align-items: center; padding: 8px 0; border-top: 1px solid #222c24; }
+.list-row input, .list-row select, .list-row textarea {
+  padding: 8px 9px; border-radius: 8px; border: 1px solid #2c3a31; background:#0f1712; color:#e9efe9; font-size:13px;
+}
+.list-row .grow { flex: 1; }
+.list-row img.thumb { width: 56px; height: 42px; object-fit: cover; border-radius:6px; }
+.mini { padding: 6px 10px; font-size: 12px; border-radius: 8px; }
+.section-block { border: 1px solid #25312a; border-radius: 12px; padding: 14px; margin-bottom: 14px; background:#141c16; }
+.section-block .sec-head { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.section-block .sec-head b { flex:1; }
+
+/* table */
+table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.tbl th, table.tbl td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #222c24; vertical-align: top; }
+table.tbl th { color: #9fb0a3; font-weight: 600; }
+.tablewrap { overflow-x: auto; }
+
+/* toast */
+.toast {
+  position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+  background: #1f4d36; color: #fff; padding: 12px 18px; border-radius: 999px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.4); opacity: 0; transition: opacity .25s; pointer-events:none; z-index: 50;
+}
+.toast.show { opacity: 1; }
+.hidden { display: none !important; }
+
+/* Details and accordion styling */
+details.section-block summary {
+  list-style: none;
+  outline: none;
+}
+details.section-block summary::-webkit-details-marker {
+  display: none;
+}
+details.section-block summary::before {
+  content: "▸";
+  color: #d9582b;
+  margin-right: 6px;
+  display: inline-block;
+  transition: transform .15s;
+}
+details.section-block[open] summary::before {
+  transform: rotate(90deg);
+}
+
+label { cursor: pointer; user-select: none; }
+input[type=checkbox] { accent-color: #1f4d36; cursor: pointer; }
+
+
+/* ---------- Mobile Control Room usability ---------- */
+@media (max-width: 600px) {
+  html, body { height: auto; min-height: 100%; }
+  .app { flex-direction: column; min-height: 100vh; }
+  .sidebar {
+    width: 100%; flex: 0 0 auto; height: auto; position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: center; gap: 4px; overflow-x: auto; overflow-y: hidden;
+    padding: 8px; border-right: 0; border-bottom: 1px solid #25312a; white-space: nowrap;
+  }
+  .sidebar .logo { display: none; }
+  .sidebar .nav-group { display: none; }
+  .sidebar .label { display: inline !important; }
+  .sidebar button.nav { display: inline-flex; align-items: center; width: auto; flex: 0 0 auto; padding: 9px 11px; }
+  .main { width: 100%; min-width: 0; }
+  .topbar { padding: 10px 12px; flex-wrap: wrap; }
+  .topbar .who { max-width: 100%; overflow-wrap: anywhere; }
+  .panel { padding: 14px 10px; }
+  .card { padding: 14px; }
+  .tablewrap { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tbl { min-width: 860px; }
+  .inline { flex-wrap: wrap; align-items: stretch; }
+  .imgfield { flex-direction: column; }
+  .imgfield img { width: 100%; max-width: 220px; }
+  .list-row { flex-wrap: wrap; }
+  .list-row > * { min-width: 0; }
+}
+
+@media (max-width: 600px) {
+  .panel input, .panel textarea, .panel select { max-width: 100%; box-sizing: border-box; }
+  .panel .grid2, .panel .grid3 { grid-template-columns: minmax(0, 1fr) !important; }
+  .panel .inline input[type=color] { width: 48px; min-width: 48px; }
+  .panel .inline input[type=text] { min-width: 0; width: 100%; }
+  .panel .card { overflow-wrap: anywhere; }
+  .panel button { min-height: 38px; }
+}

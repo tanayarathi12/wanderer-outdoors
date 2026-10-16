@@ -1,0 +1,3 @@
+# Netlify SPA rewrite — serve index.html for all non-asset routes.
+# (Cloudflare Pages / Vercel use their own config; see README.)
+/*    /index.html   200

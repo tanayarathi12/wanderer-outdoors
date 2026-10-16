@@ -1,0 +1,7 @@
+-- IMPORTANT: Do NOT run this migration against the currently connected
+-- wanderer-outdoors project. Read-only inspection confirmed that
+-- public.enquiries already exists there with columns:
+-- id, name, phone, whatsapp, email, destination, travel_type, travel_date,
+-- people, budget, requirements, message, created_at.
+-- The repaired frontend maps to that existing schema. No database migration
+-- is required for the enquiry-form code fix.

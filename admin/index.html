@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Control Room — The Wanderer Outdoors</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="assets/css/admin.css" />
+</head>
+<body>
+
+  <!-- ============ Login view ============ -->
+  <div id="loginView" class="login-wrap">
+    <div class="login-card">
+      <h1><span class="brand">The Wanderer Outdoors</span></h1>
+      <p class="sub">Control Room — sign in to edit the site.</p>
+
+      <div id="cfgWarn" class="cfgwarn hidden">
+        Control Room requires the existing Supabase project. If it is not configured, editing stays locked for security.
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" type="email" placeholder="you@example.com" autocomplete="email" />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
+      </div>
+      <button id="signInBtn" class="btn btn-primary" style="width:100%">Sign in</button>
+      <div class="inline" style="margin-top:10px; gap:8px;">
+        <button id="signUpBtn" class="btn btn-ghost" style="flex:1">Create account</button>
+      </div>
+      <div id="loginMsg" class="login-msg"></div>
+      <p class="login-hint">
+        First sign-in creates the <b>owner</b> account. Make sure
+        <b>email confirmation is OFF</b> in Supabase (Authentication → Providers)
+        or confirm your email first. Other people can be invited as editors from
+        the Account tab.
+      </p>
+      <p class="login-hint">
+        <a href="../" target="_blank" rel="noopener">↗ Open the live site in a new tab</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- ============ App shell ============ -->
+  <div id="appView" class="app hidden">
+    <aside class="sidebar">
+      <div class="logo">⛰ Control Room</div>
+      <div class="nav-group">Website Architecture</div>
+      <button class="nav" data-panel="overview">Overview</button>
+      <button class="nav" data-panel="views">View Manager</button>
+      <button class="nav" data-panel="brand">Brand &amp; Hero</button>
+      <button class="nav" data-panel="theme">Design &amp; Theme</button>
+      <button class="nav" data-panel="customTrip">Custom Trip CTA</button>
+      <button class="nav" data-panel="seo">SEO &amp; Metadata</button>
+      <div class="nav-group">Content &amp; Trips</div>
+      <button class="nav" data-panel="sections">Sections &amp; Treks</button>
+      <button class="nav" data-panel="blog">Blog Articles</button>
+      <button class="nav" data-panel="faq">FAQs</button>
+      <button class="nav" data-panel="highlights">Highlights &amp; Gallery</button>
+      <button class="nav" data-panel="reviews">Reviews &amp; Google</button>
+      <button class="nav" data-panel="contact">Contact &amp; Booking</button>
+      <div class="nav-group">Manage</div>
+      <button class="nav" data-panel="bookings">Booking Inbox</button>
+      <button class="nav" data-panel="enquiries">Enquiries Inbox</button>
+      <button class="nav" data-panel="account">Account &amp; Editors</button>
+      <div class="nav-group">Go</div>
+      <a class="nav" href="../" target="_blank" rel="noopener">↗ View live site</a>
+    </aside>
+
+    <div class="main">
+      <div class="topbar">
+        <h2 id="panelTitle">Overview</h2>
+        <span class="who" id="who"></span>
+        <span class="spacer"></span>
+        <button id="saveBtn" class="btn btn-primary">Save to site</button>
+        <button id="signOutBtn" class="btn btn-ghost">Sign out</button>
+      </div>
+      <div class="panel" id="panel"><!-- panels injected by app.js --></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- Supabase UMD build, then config + backend + defaults, then Control Room logic -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../assets/js/config.js"></script>
+  <script src="../assets/js/backend.js"></script>
+  <script src="../assets/js/defaults.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

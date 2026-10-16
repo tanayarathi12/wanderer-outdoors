@@ -1,0 +1,36 @@
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+*.swo
+*~
+
+# Environment / secrets — NEVER commit real keys
+.env
+.env.*
+.env.local
+!.env.example
+
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Build artifacts
+dist/
+.cache/
+out/
+
+# Cloudflare Pages / Vercel build artifacts
+functions/.wrangler/
+.vercel/
+
+# Logs
+*.log
+npm-debug.log*
+
+# No app secrets to ignore — the Supabase anon key in assets/js/config.js is
+# safe to commit (Row Level Security protects your data). The Google Places API
+# key, however, MUST live only in the server environment (.env / dashboard),
+# never in frontend code or config.js.

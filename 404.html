@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Redirecting… · The Wanderer Outdoors</title>
+<script>
+  // SPA deep-link fallback (GitHub Pages / any static host without rewrites).
+  // If a visitor or crawler hits a clean URL like /treks, we forward them to
+  // the SPA with the route preserved in the hash: /index.html#/treks
+  (function () {
+    try {
+      var path = location.pathname + location.search;
+      var isAsset = /\.(css|js|png|jpe?g|gif|svg|ico|webp|woff2?|ttf|eot|json|pdf|txt|xml|map)$/i.test(path);
+      if (!isAsset) {
+        var seg = path.replace(/^\/+|\/+$/g, '');
+        if (seg && seg.indexOf('admin') !== 0) {
+          location.replace('/index.html#/' + seg);
+          return;
+        }
+      }
+      location.replace('/index.html');
+    } catch (e) {
+      location.replace('/index.html');
+    }
+  })();
+</script>
+</head>
+<body style="font-family:sans-serif;text-align:center;padding:60px;">
+  <p>Loading The Wanderer Outdoors…</p>
+  <p><a href="/">Go to homepage</a></p>
+</body>
+</html>
