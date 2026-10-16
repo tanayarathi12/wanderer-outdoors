@@ -221,6 +221,7 @@
   var PANELS = {
     overview: renderOverview,
     views: renderViewsManager,
+    buttons: renderButtons,
     brand: renderBrand,
     theme: renderTheme,
     customTrip: renderCustomTrip,
@@ -244,6 +245,7 @@
     var titles = {
       overview: "Overview",
       views: "View Manager",
+      buttons: "Button Destinations & Actions",
       brand: "Brand & Hero Background",
       theme: "Design & Theme",
       customTrip: "Custom Trip CTA",
@@ -381,6 +383,84 @@
     } }, ["+ Add new view"]));
 
     p.appendChild(list);
+  }
+
+
+  /* ============================================================
+     Panel: Button Destinations & Navigation Links
+     ============================================================ */
+  function renderButtons(p) {
+    var bl = state.buttonLinks || (state.buttonLinks = {});
+    var h = state.hero || (state.hero = {});
+    var c = state.customTrip || (state.customTrip = {});
+
+    p.appendChild(el("p", { class: "tip", style: { fontSize: "14px", lineHeight: "1.6", marginBottom: "16px" } }, [
+      "Manage the label and destination of every public button across your entire website from this central panel. Use internal routes (e.g. ",
+      el("code", {}, ["#/contact"]),
+      ", ",
+      el("code", {}, ["#/booking"]),
+      ", ",
+      el("code", {}, ["#/treks"]),
+      "), section IDs, or full external URLs (e.g. ",
+      el("code", {}, ["https://wa.me/917387778296"]),
+      "). All changes take effect on the live website after clicking 'Save to site'."
+    ]));
+
+    // Card 1: Homepage Action Buttons
+    p.appendChild(card("1. Homepage Action Buttons", [
+      el("strong", { style: { display: "block", color: "#6cc28f", margin: "4px 0 8px" } }, ["Hero Section Primary Button"]),
+      text("Hero Button Label", h.ctaText || "Plan an Adventure", function(v){ h.ctaText = v; bl.heroCtaLabel = v; }),
+      text("Hero Button Destination", h.ctaHref || bl.heroCta || "/treks", function(v){ h.ctaHref = v; bl.heroCta = v; }, { placeholder: "/treks or #/contact" }),
+
+      el("strong", { style: { display: "block", color: "#6cc28f", margin: "18px 0 8px" } }, ["Green Call-To-Action Banner ('Ready to explore…' block)"]),
+      text("CTA Banner Headline", bl.homeCTATitle || "Ready to explore the outdoors?", function(v){ bl.homeCTATitle = v; }),
+      text("CTA Banner Subtitle", bl.homeCTASubtitle || "Speak directly with our instructors on WhatsApp or book your spot in under 2 minutes.", function(v){ bl.homeCTASubtitle = v; }, { textarea: true }),
+      text("Reserve a Spot Button Label", bl.homeReserveLabel || "Reserve a Spot", function(v){ bl.homeReserveLabel = v; }),
+      text("Reserve a Spot Button Destination", bl.homeReserve || "#/contact", function(v){ bl.homeReserve = v; }, { placeholder: "#/contact or #/booking or full URL" }),
+      text("CTA Banner WhatsApp Us Link", bl.homeWhatsApp || "https://wa.me/917387778296", function(v){ bl.homeWhatsApp = v; }, { placeholder: "https://wa.me/..." }),
+
+      el("strong", { style: { display: "block", color: "#6cc28f", margin: "18px 0 8px" } }, ["Featured Adventures Section"]),
+      text("Featured Section 'View all' Button Label", bl.featuredTripsLabel || "View all treks & camps ▸", function(v){ bl.featuredTripsLabel = v; }),
+      text("Featured Section 'View all' Destination", bl.featuredTrips || "#/treks", function(v){ bl.featuredTrips = v; }, { placeholder: "#/treks" })
+    ]));
+
+    // Card 2: Blog Article Action Buttons
+    p.appendChild(card("2. Blog & Trail Guide Article Buttons", [
+      el("p", { class: "tip" }, ["Buttons appearing at the bottom of every individual blog article:"]),
+      text("Article Bottom Primary Button Label (e.g. Plan a Trip with Us)", bl.blogCtaLabel || "Plan a Trip with Us", function(v){ bl.blogCtaLabel = v; }, { placeholder: "Plan a Trip with Us" }),
+      text("Article Bottom Primary Button Destination", bl.blogCtaHref || "#/contact", function(v){ bl.blogCtaHref = v; }, { placeholder: "#/contact or #/booking or https://..." }),
+      text("Article 'Back to Articles' Button Label", bl.blogBackLabel || "← Back to Articles", function(v){ bl.blogBackLabel = v; })
+    ]));
+
+    // Card 3: Contact Us & Enquiry Submission Buttons
+    p.appendChild(card("3. Contact Us & Enquiry Submission Buttons", [
+      el("p", { class: "tip" }, ["Controls for the enquiry form on the Contact Us page:"]),
+      text("Enquiry Form Submit Button Label", bl.contactSubmitLabel || "Submit enquiry", function(v){ bl.contactSubmitLabel = v; }, { placeholder: "Submit enquiry" }),
+      text("Optional Redirect URL after enquiry submission (leave blank to stay on page)", bl.contactSubmitRedirect || "", function(v){ bl.contactSubmitRedirect = v; }, { placeholder: "e.g. https://wa.me/917387778296 or blank" })
+    ]));
+
+    // Card 4: Custom Trip & Tours Section
+    p.appendChild(card("4. Custom Trip & Tours Section ('Plan Your Trip With Us')", [
+      el("p", { class: "tip" }, ["The custom-trip invitation banner featured on the Tours page and customizable globally:"]),
+      text("Invitation Eyebrow", c.kicker || "Your journey, your way", function(v){ c.kicker = v; }),
+      text("Invitation Heading", c.title || "Plan Your Trip With Us", function(v){ c.title = v; }),
+      text("Plan My Trip Button Label", c.buttonTextLabel || "Plan My Trip", function(v){ c.buttonTextLabel = v; }),
+      text("Plan My Trip Button Destination", c.buttonUrl || "#/contact", function(v){ c.buttonUrl = v; }, { placeholder: "#/contact or https://..." })
+    ]));
+
+    // Card 5: Booking Form & Float Actions
+    p.appendChild(card("5. Booking Flow & Floating Actions", [
+      text("Booking Form 'Confirm Booking' Button Label", bl.bookingSubmitLabel || "Confirm Booking", function(v){ bl.bookingSubmitLabel = v; }),
+      text("Booking Success 'Book another trip' Button Label", bl.bookAnotherLabel || "Book another trip", function(v){ bl.bookAnotherLabel = v; }),
+      text("Floating WhatsApp Button URL", bl.floatingWhatsApp || ("https://wa.me/" + (state.contact.whatsapp || "917387778296").replace(/\D/g, "")), function(v){ bl.floatingWhatsApp = v; }, { placeholder: "https://wa.me/917387778296" })
+    ]));
+
+    // Card 6: Footer Links
+    p.appendChild(card("6. Footer Action Links", [
+      text("Footer WhatsApp Link", bl.footerWhatsApp || "https://wa.me/917387778296", function(v){ bl.footerWhatsApp = v; }, { placeholder: "https://wa.me/..." }),
+      text("Footer Email Link", bl.footerEmail || "mailto:hello@wandereroutdoors.in", function(v){ bl.footerEmail = v; }, { placeholder: "mailto:..." }),
+      text("Footer Instagram Link", bl.footerInstagram || "https://www.instagram.com/the_wanderer_outdoors/", function(v){ bl.footerInstagram = v; }, { placeholder: "https://instagram.com/..." })
+    ]));
   }
 
   /* ============================================================

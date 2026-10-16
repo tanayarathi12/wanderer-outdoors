@@ -510,7 +510,7 @@
           <span class="kicker" style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ember);display:block;margin-bottom:6px;">Featured Adventures</span>
           <h2 style="font-size:clamp(26px,3.5vw,36px);margin:0;letter-spacing:-.5px;">Upcoming summits &amp; trails.</h2>
         </div>
-        <a href="${escapeHtml((state.buttonLinks && state.buttonLinks.featuredTrips) || '#/treks')}" class="btn-ghost" id="viewAllTreksBtn">View all treks &amp; camps ▸</a>
+        <a href="${escapeHtml((state.buttonLinks && state.buttonLinks.featuredTrips) || '#/treks')}" class="btn-ghost" id="viewAllTreksBtn">${escapeHtml((state.buttonLinks && state.buttonLinks.featuredTripsLabel) || 'View all treks & camps ▸')}</a>
       </div>
     `;
     const viewAllBtn = featWrap.querySelector('#viewAllTreksBtn');
@@ -1396,10 +1396,15 @@
         ${formatSimpleMarkdown(article.content || '')}
       </div>
       <div style="margin-top:40px;padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
-        <button class="btn-ghost" onclick="window.history.back()">← Back to Articles</button>
-        <button class="btn-primary" onclick="window.navigate('booking')">Plan a Trip with Us</button>
+        <button class="btn-ghost" id="blogBackBtn">${escapeHtml((state.buttonLinks && state.buttonLinks.blogBackLabel) || '← Back to Articles')}</button>
+        <button class="btn-primary" id="blogCtaBtn">${escapeHtml((state.buttonLinks && state.buttonLinks.blogCtaLabel) || 'Plan a Trip with Us')}</button>
       </div>
     `;
+    art.querySelector('#blogBackBtn').addEventListener('click', () => window.history.back());
+    art.querySelector('#blogCtaBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      openConfiguredDestination((state.buttonLinks && state.buttonLinks.blogCtaHref) || '#/contact');
+    });
     view.appendChild(art);
     return view;
   }
@@ -1519,7 +1524,7 @@
             <label>Phone / WhatsApp<input name="phone" type="tel" autocomplete="tel" maxlength="40" style="display:block;width:100%;padding:12px;border:1px solid #cbd5cc;border-radius:8px;"></label>
             <label>Subject<input name="subject" maxlength="160" style="display:block;width:100%;padding:12px;border:1px solid #cbd5cc;border-radius:8px;"></label>
             <label>How can we help?<textarea name="message" required maxlength="5000" rows="4" style="display:block;width:100%;padding:12px;border:1px solid #cbd5cc;border-radius:8px;"></textarea></label>
-            <button type="submit" class="btn-primary" style="justify-self:start;">Submit enquiry</button>
+            <button type="submit" class="btn-primary" style="justify-self:start;">${escapeHtml((state.buttonLinks && state.buttonLinks.contactSubmitLabel) || 'Submit enquiry')}</button>
             <p id="generalEnquiryStatus" role="status" aria-live="polite" style="margin:0;"></p>
           </form>
         </div>
@@ -1544,12 +1549,18 @@
         const result = await Backend.submitEnquiry(payload);
         if (!result.ok) throw new Error(result.error || 'Could not save your enquiry.');
         enquiryForm.reset();
-        statusEl.textContent = 'Thank you! Your enquiry has been submitted.';
+        const redir = (state.buttonLinks && state.buttonLinks.contactSubmitRedirect) || '';
+        if(redir){
+          statusEl.textContent = 'Thank you! Redirecting…';
+          setTimeout(() => openConfiguredDestination(redir), 1000);
+        } else {
+          statusEl.textContent = 'Thank you! Your enquiry has been submitted.';
+        }
       } catch (err) {
         statusEl.textContent = 'Could not submit: ' + (err.message || 'Please try WhatsApp instead.');
       } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit enquiry';
+        submitBtn.textContent = (state.buttonLinks && state.buttonLinks.contactSubmitLabel) || 'Submit enquiry';
       }
     });
     view.appendChild(sec);
@@ -2076,7 +2087,7 @@
 
     // Reset submit lock so future submissions work.
     form._submitting = false;
-    if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = 'Confirm Booking'; }
+    if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = (state.buttonLinks && state.buttonLinks.bookingSubmitLabel) || 'Confirm Booking'; }
   }
 
   function showBookingSuccess(form, b, waUrl, waOpened, saveOk, saveErr){
@@ -3039,6 +3050,10 @@
     const footerMail = document.querySelector('.footer a[href^="mailto:"]');
     if(footerMail) footerMail.href = (state.buttonLinks && state.buttonLinks.footerEmail) || 'mailto:hello@wandereroutdoors.in';
     applyTheme();
+
+    // Floating WhatsApp
+    const floatWa = document.querySelector('.wa-float');
+    if(floatWa) floatWa.href = (state.buttonLinks && state.buttonLinks.floatingWhatsApp) || ('https://wa.me/' + (state.contact.whatsapp||'917387778296').replace(/\D/g,''));
 
     // 4. Render Dynamic Primary Navigation
     renderNav();

@@ -144,14 +144,28 @@
     buttonLinks: {
       // Hero section
       heroCta: '#/treks',
-      homeWhatsApp: 'https://wa.me/917387778296',
+      heroCtaLabel: 'Plan an Adventure',
       // Home CTA Banner ("Ready to explore the outdoors?")
       homeCTATitle: 'Ready to explore the outdoors?',
       homeCTASubtitle: 'Speak directly with our instructors on WhatsApp or book your spot in under 2 minutes.',
       homeReserveLabel: 'Reserve a Spot',
       homeReserve: '#/contact',
+      homeWhatsApp: 'https://wa.me/917387778296',
       // Home featured trips "View all" button
       featuredTrips: '#/treks',
+      featuredTripsLabel: 'View all treks & camps ▸',
+      // Blog Article action buttons
+      blogCtaLabel: 'Plan a Trip with Us',
+      blogCtaHref: '#/contact',
+      blogBackLabel: '← Back to Articles',
+      // Contact Us & Enquiry form buttons
+      contactSubmitLabel: 'Submit enquiry',
+      contactSubmitRedirect: '',
+      // Booking flow
+      bookingSubmitLabel: 'Confirm Booking',
+      bookAnotherLabel: 'Book another trip',
+      // Floating WhatsApp
+      floatingWhatsApp: 'https://wa.me/917387778296',
       // Footer
       footerWhatsApp: 'https://wa.me/917387778296',
       footerEmail: 'mailto:hello@wandereroutdoors.in',
