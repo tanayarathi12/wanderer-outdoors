@@ -2101,89 +2101,36 @@
     const box = document.createElement('div');
     box.className = 'success-card';
     box.id = 'bookingSuccess';
-    const isSuccess = saveOk || (!window.Backend || !Backend.configured());
-    const phoneClean = (state.contact.whatsapp || '7387778296').replace(/\D/g, '').replace(/^91/, '');
-
     box.innerHTML = `
-      <div class="success-badge-wrap">
-        <div class="tick">${isSuccess ? '&#10003;' : '⚠️'}</div>
-      </div>
-      <div class="success-header">
-        <span class="success-kicker">${isSuccess ? 'Booking Received' : 'Notice'}</span>
-        <h3>${isSuccess ? 'Your Spot is Reserved!' : 'Booking Recorded'}</h3>
-        <p class="success-subtitle">${isSuccess
-          ? 'Thank you for choosing <strong>The Wanderer Outdoors</strong>. Your booking has been received and logged in our system.'
-          : 'Your booking details could not reach the database (' + escapeHtml(saveErr) + '), but your details are saved below. Please connect via WhatsApp to confirm.'}</p>
-      </div>
-
-      <!-- Highlighted Booking Reference Pill -->
-      <div class="booking-ref-card">
-        <div class="ref-label">Booking Reference</div>
-        <div class="ref-value-wrap">
-          <span class="ref-code" id="bookingRefText">${escapeHtml(b.ref)}</span>
-          <button type="button" class="btn-copy-ref" id="copyRefBtn" title="Copy Reference Code">📋 Copy</button>
-        </div>
-      </div>
-
-      <!-- Ticket Details Summary Grid -->
+      <div class="tick">${saveOk || (!window.Backend || !Backend.configured()) ? '&#10003;' : '⚠️'}</div>
+      <h3>${saveOk || (!window.Backend || !Backend.configured()) ? 'Booking Confirmed!' : 'Booking Recorded with Notice'}</h3>
+      <p>${saveOk || (!window.Backend || !Backend.configured())
+        ? (waOpened
+            ? 'We’ve opened WhatsApp with your booking details ready — press <strong>Send</strong> in the chat to connect directly with our trek coordinators.'
+            : 'Your booking has been recorded! Tap below to send your details to our team on WhatsApp.')
+        : 'Your booking details could not be saved to the database (' + escapeHtml(saveErr) + '). However, your details are prepared below — please send them directly on WhatsApp so our coordinators can reserve your slot.'}</p>
       <div class="success-summary">
-        <div class="summary-row">
-          <span class="row-label">⛰️ Adventure</span>
-          <span class="row-val font-semibold">${escapeHtml(b.package || b.trip_title || 'Outdoor Adventure')}</span>
-        </div>
-        <div class="summary-row">
-          <span class="row-label">👤 Traveller</span>
-          <span class="row-val">${escapeHtml(b.name)}</span>
-        </div>
-        <div class="summary-row">
-          <span class="row-label">📅 Travel Date</span>
-          <span class="row-val">${escapeHtml(b.date || 'To be scheduled')}</span>
-        </div>
-        <div class="summary-row">
-          <span class="row-label">👥 Group Size</span>
-          <span class="row-val">${escapeHtml(b.people || '1')} person(s)</span>
-        </div>
-        <div class="summary-row">
-          <span class="row-label">💳 Payment</span>
-          <span class="row-val">${escapeHtml(b.payment || 'Direct / UPI')}</span>
-        </div>
-        <div class="summary-row">
-          <span class="row-label">📋 Status</span>
-          <span class="row-val status-confirmed">● Booking Confirmed</span>
-        </div>
+        <div><span>Booking Reference</span><span style="color:var(--ember);font-weight:700;">${escapeHtml(b.ref)}</span></div>
+        <div><span>Name</span><span>${escapeHtml(b.name)}</span></div>
+        <div><span>Adventure</span><span>${escapeHtml(b.package)}</span></div>
+        <div><span>Travel Date</span><span>${escapeHtml(b.date)}</span></div>
+        <div><span>Participants</span><span>${escapeHtml(b.people)} person(s)</span></div>
+        <div><span>Payment</span><span>${escapeHtml(b.payment)}</span></div>
       </div>
-
-      <!-- Action Buttons -->
       <div class="success-actions">
-        <a class="wa-btn wa-btn-prominent" href="${escapeHtml(waUrl)}" target="_blank" rel="noopener">
+        <a class="wa-btn" href="${escapeHtml(waUrl)}" target="_blank" rel="noopener">
           <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16.04 4C9.96 4 5.02 8.94 5.02 15.02c0 2.2.6 4.26 1.64 6.02L5 28l7.1-1.62a11 11 0 0 0 3.94.72h.01C22.12 27.1 27 22.15 27 16.08 27 9.98 22.1 4 16.04 4zm0 2.2c3.83 0 6.94 3.12 6.94 6.95 0 3.83-3.11 6.94-6.94 6.94-1.2 0-2.36-.3-3.37-.87l-.48-.27-4.03 1.03 1.08-3.93-.31-.5a6.9 6.9 0 0 1-1.06-3.7c0-3.83 3.11-6.65 7.17-6.65zM12.9 10.3c-.2 0-.5.07-.76.36-.27.28-1.02 1-.99 2.43.03 1.44 1.05 2.83 1.2 3.03.14.19 2.02 3.3 5.02 4.5 2.48.99 2.99.79 3.53.74.54-.05 1.75-.72 2-1.41.25-.69.25-1.28.18-1.4-.07-.13-.26-.2-.54-.35-.28-.14-1.65-.81-1.9-.9-.26-.09-.44-.14-.63.14-.19.28-.72.9-.89 1.08-.16.19-.33.21-.61.07-.28-.14-1.18-.44-2.25-1.39-.83-.74-1.39-1.66-1.55-1.94-.16-.28-.02-.43.12-.57.13-.13.28-.33.42-.5.14-.16.19-.28.28-.47.1-.19.05-.35-.02-.5-.07-.14-.62-1.55-.87-2.1-.22-.55-.45-.46-.62-.47l-.56-.01z"/></svg>
-          <span>Connect with Coordinator on WhatsApp</span>
+          <span>Send on WhatsApp — ${(state.contact.whatsapp||'7387778296').replace(/\D/g,'').replace(/^91/,'')}</span>
         </a>
-        <button class="btn-ghost btn-receipt-full" id="showReceiptBtn">📄 View &amp; Print Official Receipt</button>
+        <button class="btn-ghost" id="showReceiptBtn">🖨 View / Print Official Receipt</button>
         ${!saveOk && window.Backend && Backend.configured() ? '<button class="btn-primary" id="retrySaveBtn">↻ Retry Save to Database</button>' : ''}
-        <button class="btn-ghost btn-book-another" id="bookAnotherTripBtn">＋ Book another adventure</button>
+        <button class="btn-ghost" id="bookAnotherTripBtn">Book another trip</button>
       </div>
-
-      <div class="saved-note-pill ${saveOk ? 'saved-ok' : 'saved-warn'}">
-        ${saveOk ? '🔒 Saved securely to The Wanderer Outdoors database' : (saveErr ? 'Database note: ' + escapeHtml(saveErr) : 'Ready to confirm on WhatsApp')}
-      </div>
+      <p class="saved-note" style="${saveOk ? 'color:#15803d;' : 'color:#b91c1c;'}">${saveOk ? 'Saved to site database ✓' : (saveErr ? 'Database notice: ' + escapeHtml(saveErr) : 'Ready to confirm on WhatsApp.')}</p>
     `;
     card.appendChild(box);
     box.scrollIntoView({ behavior:'smooth', block:'center' });
 
-    const copyBtn = box.querySelector('#copyRefBtn');
-    if(copyBtn){
-      copyBtn.addEventListener('click', () => {
-        try {
-          navigator.clipboard.writeText(b.ref).then(() => {
-            copyBtn.textContent = '✓ Copied!';
-            setTimeout(() => { copyBtn.textContent = '📋 Copy'; }, 2500);
-          });
-        } catch(e) {
-          copyBtn.textContent = '✓ ' + b.ref;
-        }
-      });
-    }
     box.querySelector('#showReceiptBtn').addEventListener('click', () => openReceiptModal(b));
     var retryBtn = box.querySelector('#retrySaveBtn');
     if(retryBtn){
