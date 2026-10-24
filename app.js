@@ -2118,11 +2118,13 @@
         <div><span>Payment</span><span>${escapeHtml(b.payment)}</span></div>
       </div>
       <div class="success-actions">
-        <a class="wa-btn" href="${escapeHtml(waUrl)}" target="_blank" rel="noopener">
+        <button class="btn-primary" id="showReceiptBtn" style="background:var(--forest);font-size:15px;padding:14px 22px;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;">
+          <span>📄 View / Download Receipt &amp; Share on WhatsApp (${(state.contact.whatsapp||'7387778296').replace(/\D/g,'').replace(/^91/,'')})</span>
+        </button>
+        <a class="wa-btn" href="${escapeHtml(waUrl)}" target="_blank" rel="noopener" style="font-size:14px;padding:12px 20px;">
           <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16.04 4C9.96 4 5.02 8.94 5.02 15.02c0 2.2.6 4.26 1.64 6.02L5 28l7.1-1.62a11 11 0 0 0 3.94.72h.01C22.12 27.1 27 22.15 27 16.08 27 9.98 22.1 4 16.04 4zm0 2.2c3.83 0 6.94 3.12 6.94 6.95 0 3.83-3.11 6.94-6.94 6.94-1.2 0-2.36-.3-3.37-.87l-.48-.27-4.03 1.03 1.08-3.93-.31-.5a6.9 6.9 0 0 1-1.06-3.7c0-3.83 3.11-6.65 7.17-6.65zM12.9 10.3c-.2 0-.5.07-.76.36-.27.28-1.02 1-.99 2.43.03 1.44 1.05 2.83 1.2 3.03.14.19 2.02 3.3 5.02 4.5 2.48.99 2.99.79 3.53.74.54-.05 1.75-.72 2-1.41.25-.69.25-1.28.18-1.4-.07-.13-.26-.2-.54-.35-.28-.14-1.65-.81-1.9-.9-.26-.09-.44-.14-.63.14-.19.28-.72.9-.89 1.08-.16.19-.33.21-.61.07-.28-.14-1.18-.44-2.25-1.39-.83-.74-1.39-1.66-1.55-1.94-.16-.28-.02-.43.12-.57.13-.13.28-.33.42-.5.14-.16.19-.28.28-.47.1-.19.05-.35-.02-.5-.07-.14-.62-1.55-.87-2.1-.22-.55-.45-.46-.62-.47l-.56-.01z"/></svg>
-          <span>Send on WhatsApp — ${(state.contact.whatsapp||'7387778296').replace(/\D/g,'').replace(/^91/,'')}</span>
+          <span>Share directly on WhatsApp</span>
         </a>
-        <button class="btn-ghost" id="showReceiptBtn">🖨 View / Print Official Receipt</button>
         ${!saveOk && window.Backend && Backend.configured() ? '<button class="btn-primary" id="retrySaveBtn">↻ Retry Save to Database</button>' : ''}
         <button class="btn-ghost" id="bookAnotherTripBtn">Book another trip</button>
       </div>
@@ -2130,6 +2132,8 @@
     `;
     card.appendChild(box);
     box.scrollIntoView({ behavior:'smooth', block:'center' });
+    // Automatically open the receipt modal so travellers can view, download PDF, or share
+    setTimeout(() => { openReceiptModal(b); }, 450);
 
     box.querySelector('#showReceiptBtn').addEventListener('click', () => openReceiptModal(b));
     var retryBtn = box.querySelector('#retrySaveBtn');
