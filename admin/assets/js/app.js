@@ -1383,12 +1383,83 @@
 
   /* ---------------- Init Control Room ---------------- */
   async function init() {
-    $("#saveBtn").addEventListener("click", save);
-    $("#signOutBtn").addEventListener("click", signOut);
+    // 1. Wire topbar & sidebar buttons
+    var saveBtn = $("#saveBtn"); if (saveBtn) saveBtn.addEventListener("click", save);
+    var signOutBtn = $("#signOutBtn"); if (signOutBtn) signOutBtn.addEventListener("click", signOut);
 
     Array.from(document.querySelectorAll(".sidebar .nav[data-panel]")).forEach(function (btn) {
       btn.addEventListener("click", function () { showPanel(btn.getAttribute("data-panel")); });
     });
+
+    // 2. Wire Sign In & Sign Up buttons IMMEDIATELY before ANY async/network call
+    var signInBtn = $("#signInBtn");
+    var signUpBtn = $("#signUpBtn");
+    var emailInput = $("#email");
+    var passInput = $("#password");
+    var loginMsg = $("#loginMsg");
+
+    function doSignIn() {
+      var em = emailInput ? emailInput.value.trim() : "";
+      var pw = passInput ? passInput.value : "";
+      if (!em || !pw) {
+        if (loginMsg) loginMsg.textContent = "Please enter both your email and password.";
+        return;
+      }
+      if (signInBtn) signInBtn.disabled = true;
+      if (loginMsg) loginMsg.textContent = "Signing in… please wait.";
+      window.Backend.signIn(em, pw).then(function(r) {
+        if (signInBtn) signInBtn.disabled = false;
+        if (r && r.ok) {
+          if (loginMsg) loginMsg.textContent = "Signed in! Opening Control Room…";
+          setTimeout(function() { location.reload(); }, 300);
+        } else {
+          var errMsg = (r && r.error) || "Sign-in failed.";
+          if (errMsg.toLowerCase().indexOf("invalid login credentials") !== -1) {
+            errMsg = "Incorrect email or password. Please verify and try again.";
+          } else if (errMsg.toLowerCase().indexOf("email not confirmed") !== -1) {
+            errMsg = "Email is not confirmed yet. Turn off 'Confirm email' in Supabase Providers or confirm your email.";
+          }
+          if (loginMsg) loginMsg.textContent = errMsg;
+        }
+      }).catch(function(err) {
+        if (signInBtn) signInBtn.disabled = false;
+        if (loginMsg) loginMsg.textContent = "Sign-in error: " + (err.message || "Network issue");
+      });
+    }
+
+    function doSignUp() {
+      var em = emailInput ? emailInput.value.trim() : "";
+      var pw = passInput ? passInput.value : "";
+      if (!em || !pw) {
+        if (loginMsg) loginMsg.textContent = "Please enter both email and password to create an account.";
+        return;
+      }
+      if (signUpBtn) signUpBtn.disabled = true;
+      if (loginMsg) loginMsg.textContent = "Creating account… please wait.";
+      window.Backend.signUp(em, pw).then(function(r) {
+        if (signUpBtn) signUpBtn.disabled = false;
+        if (r && r.ok) {
+          if (loginMsg) loginMsg.textContent = "Account created successfully! Signing you in…";
+          doSignIn();
+        } else {
+          if (loginMsg) loginMsg.textContent = (r && r.error) || "Could not create account.";
+        }
+      }).catch(function(err) {
+        if (signUpBtn) signUpBtn.disabled = false;
+        if (loginMsg) loginMsg.textContent = "Create account error: " + (err.message || "Unknown error");
+      });
+    }
+
+    if (signInBtn) signInBtn.addEventListener("click", doSignIn);
+    if (signUpBtn) signUpBtn.addEventListener("click", doSignUp);
+
+    // Support pressing Enter key in email or password input
+    if (emailInput) {
+      emailInput.addEventListener("keydown", function(e) { if (e.key === "Enter") doSignIn(); });
+    }
+    if (passInput) {
+      passInput.addEventListener("keydown", function(e) { if (e.key === "Enter") doSignIn(); });
+    }
 
     if (!window.Backend || !window.Backend.configured()) {
       localMode = true;
@@ -1424,32 +1495,7 @@
       $("#loginMsg").textContent = "This account is not authorized for the Control Room. Sign in with an approved editor account.";
     }
 
-    // Sign in / Sign up buttons
-    $("#signInBtn").addEventListener("click", async function () {
-      var em = $("#email").value.trim(), pw = $("#password").value;
-      if (!em || !pw) { $("#loginMsg").textContent = "Enter email and password."; return; }
-      $("#signInBtn").disabled = true; $("#loginMsg").textContent = "Signing in…";
-      var r = await window.Backend.signIn(em, pw);
-      $("#signInBtn").disabled = false;
-      if (r && r.ok) {
-        location.reload();
-      } else {
-        $("#loginMsg").textContent = (r && r.error) || "Sign-in failed.";
-      }
-    });
-
-    $("#signUpBtn").addEventListener("click", async function () {
-      var em = $("#email").value.trim(), pw = $("#password").value;
-      if (!em || !pw) { $("#loginMsg").textContent = "Enter email and password."; return; }
-      $("#signUpBtn").disabled = true; $("#loginMsg").textContent = "Creating account…";
-      var r = await window.Backend.signUp(em, pw);
-      $("#signUpBtn").disabled = false;
-      if (r && r.ok) {
-        $("#loginMsg").textContent = "Account created. You can now sign in.";
-      } else {
-        $("#loginMsg").textContent = (r && r.error) || "Sign-up failed.";
-      }
-    });
+// (Sign in / Sign up buttons wired at start of init)
   }
 
   async function loadContentAndBoot() {
