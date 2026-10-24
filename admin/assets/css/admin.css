@@ -175,3 +175,67 @@ input[type=checkbox] { accent-color: #1f4d36; cursor: pointer; }
   .panel .card { overflow-wrap: anywhere; }
   .panel button { min-height: 38px; }
 }
+
+
+/* Mobile Usability & Polish for Control Room */
+@media (max-width: 600px) {
+  .sidebar {
+    background: #0d130f;
+    box-shadow: 0 4px 12px rgba(0,0,0,.35);
+    scrollbar-width: thin;
+    scrollbar-color: #25312a transparent;
+  }
+  .sidebar button.nav {
+    border-radius: 20px;
+    background: rgba(255,255,255,.05);
+    margin-right: 4px;
+    font-size: 12.5px;
+    white-space: nowrap;
+    border: 1px solid rgba(255,255,255,.08);
+  }
+  .sidebar button.nav.active {
+    background: #1f4d36 !important;
+    border-color: #2d6b4c !important;
+    color: #fff !important;
+    font-weight: 700;
+  }
+  .topbar {
+    position: sticky;
+    top: 52px;
+    z-index: 9;
+    background: #141c16;
+    border-bottom: 1px solid #25312a;
+    gap: 8px;
+    align-items: center;
+  }
+  .topbar h2 {
+    font-size: 18px !important;
+    margin: 0;
+  }
+  .topbar .spacer {
+    display: none;
+  }
+  #saveBtn {
+    background: #22c55e !important;
+    color: #0b1c10 !important;
+    font-weight: 800 !important;
+    padding: 8px 14px !important;
+    font-size: 13px !important;
+    border-radius: 8px !important;
+  }
+  #signOutBtn {
+    padding: 8px 10px !important;
+    font-size: 12px !important;
+  }
+  .card h3 {
+    font-size: 16px !important;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+  }
+  .field label {
+    font-size: 12.5px !important;
+    color: #9fb0a3 !important;
+  }
+}
+
