@@ -53,7 +53,11 @@
     if (!it || typeof it !== 'object') it = {};
     var id = it.id || h('i');
     var name = it.name || 'Untitled Adventure';
-    var slug = it.slug || slugify(name) || ('item-' + id);
+    var slug = it.slug;
+    // Auto-fix mismatched legacy slugs (e.g. if Kedarkantha was renamed to Lakeside Camping):
+    if (!slug || (slug === 'kedarkantha-winter-trek' && it.name && !it.name.toLowerCase().includes('kedarkantha'))) {
+      slug = slugify(name) || ('item-' + id);
+    }
 
     // Normalize cover image
     var cover = { url: '', path: '' };

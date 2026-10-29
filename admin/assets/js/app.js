@@ -176,6 +176,7 @@
       ? el("textarea", { rows: opts.rows || 3 }, [])
       : el("input", { type: opts.type || "text" }, []);
     if (opts.placeholder) t.setAttribute("placeholder", opts.placeholder);
+    if (opts.dataField) t.setAttribute("data-field", opts.dataField);
     t.value = value == null ? "" : value;
     t.addEventListener("input", function () { onInput(t.value); markDirty(); });
     return field(label, t);
@@ -817,13 +818,26 @@
 
         // Basic Info
         itContent.appendChild(el("div", { class: "grid2" }, [
-          text("Adventure Name", item.name, function (v) { item.name = v; }),
+          text("Adventure Name", item.name, function (v) {
+            item.name = v;
+            // Auto-sync slug if empty or if matching old default
+            if (!item.slug || item.slug === "kedarkantha-winter-trek") {
+              item.slug = window.WO_slugify ? window.WO_slugify(v) : v.toLowerCase().replace(/[^\w-]/g, "");
+              var slugInp = itContent.querySelector("input[data-field='slug']");
+              if (slugInp) slugInp.value = item.slug;
+            }
+            var sSpan = itSummary.querySelector("span");
+            if (sSpan) sSpan.textContent = (item.name || "Untitled") + " (₹" + (item.cost || "") + " · " + (item.days || "") + ")";
+          }),
           text("Cost (INR)", item.cost, function (v) { item.cost = v; })
         ]));
         itContent.appendChild(el("div", { class: "grid2" }, [
-          text("Dates Summary (e.g. 20th Sept or Dec - Feb)", item.dates, function (v) { item.dates = v; }),
+          text("URL Slug (e.g. lakeside-camping)", item.slug || (window.WO_slugify ? window.WO_slugify(item.name) : ""), function (v) {
+            item.slug = window.WO_slugify ? window.WO_slugify(v) : v.toLowerCase().replace(/[^\w-]/g, "");
+          }, { placeholder: "lakeside-camping", dataField: "slug" }),
           text("Duration (e.g. 1 day or 6 days)", item.days, function (v) { item.days = v; })
         ]));
+        itContent.appendChild(text("Dates Summary (e.g. 20th Sept or Dec - Feb)", item.dates, function (v) { item.dates = v; }));
 
         // Subsection Assignment
         if (sec.subsections && sec.subsections.length > 0) {
