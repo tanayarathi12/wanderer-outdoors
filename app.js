@@ -803,12 +803,15 @@
           ${item.days ? `<span>⏱ ${escapeHtml(item.days)}</span>` : ''}
           ${item.subsection ? `<span class="trip-subsec-badge">🏷️ ${escapeHtml(item.subsection)}</span>` : ''}
         </div>
-        ${(item.batches && item.batches.length > 0) ? `
+        ${(() => {
+          const cardBatches = getEffectiveBatches(item);
+          if(!cardBatches.length) return '';
+          return `
           <div class="trip-card-batches">
             <small>⚡ Upcoming Batches:</small>
-            <span>${escapeHtml(item.batches.slice(0, 2).join(' · '))}${item.batches.length > 2 ? ' +' + (item.batches.length - 2) + ' more' : ''}</span>
-          </div>
-        ` : ''}
+            <span>${escapeHtml(cardBatches.slice(0, 2).join(' · '))}${cardBatches.length > 2 ? ' +' + (cardBatches.length - 2) + ' more' : ''}</span>
+          </div>`;
+        })()}
         ${item.desc ? `<p class="trip-card-desc">${escapeHtml(item.desc)}</p>` : ''}
         <div class="trip-card-footer">
           <div class="trip-card-price">
@@ -934,6 +937,36 @@
       leftCol.appendChild(descBlock);
     }
 
+    // Upcoming Batches & Schedule Block
+    const batches = getEffectiveBatches(item);
+    if(batches.length > 0){
+      const batchBlock = document.createElement('div');
+      batchBlock.className = 'trip-block';
+      batchBlock.innerHTML = `
+        <h3>📅 Upcoming Departure Batches</h3>
+        <p class="muted" style="font-size:13.5px;margin-bottom:14px;">Select from our scheduled departure dates below to reserve your spot.</p>
+        <div class="batch-list-grid">
+          ${batches.map(b => `
+            <div class="batch-row" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--bg-soft,#f7f5f0);border-radius:10px;border:1px solid var(--line);margin-bottom:8px;gap:12px;flex-wrap:wrap;">
+              <div>
+                <strong style="color:var(--forest,#1F4D36);font-size:14px;">📅 ${escapeHtml(b)}</strong>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px;">⏱ ${escapeHtml(item.days || 'Guided adventure')} · 📍 Base to Base</div>
+              </div>
+              <button class="btn-primary mini book-batch-direct-btn" data-batch="${escapeHtml(b)}" style="padding:7px 16px;font-size:12.5px;">Book This Batch ▸</button>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      batchBlock.querySelectorAll('.book-batch-direct-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          const bVal = btn.dataset.batch;
+          bookThis(sec.key, item.id, item, bVal);
+        });
+      });
+      leftCol.appendChild(batchBlock);
+    }
+
     // Highlights Block (NO EMPTY BLOCKS)
     const hls = Array.isArray(item.highlights) ? item.highlights.filter(Boolean) : [];
     if(vis.highlights !== false && hls.length > 0){
@@ -1029,35 +1062,7 @@
       leftCol.appendChild(faqBlock);
     }
 
-    // Upcoming Batches & Schedule Block
-    const batches = Array.isArray(item.batches) ? item.batches.filter(Boolean) : [];
-    if(batches.length > 0){
-      const batchBlock = document.createElement('div');
-      batchBlock.className = 'trip-block';
-      batchBlock.innerHTML = `
-        <h3>📅 Upcoming Departure Batches</h3>
-        <p class="muted" style="font-size:13.5px;margin-bottom:14px;">Select from our scheduled departure dates below to reserve your spot.</p>
-        <div class="batch-list-grid">
-          ${batches.map(b => `
-            <div class="batch-row" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--bg-soft,#f7f5f0);border-radius:10px;border:1px solid var(--line);margin-bottom:8px;gap:12px;flex-wrap:wrap;">
-              <div>
-                <strong style="color:var(--forest,#1F4D36);font-size:14px;">📅 ${escapeHtml(b)}</strong>
-                <div style="font-size:12px;color:var(--muted);margin-top:2px;">⏱ ${escapeHtml(item.days || 'Guided adventure')} · 📍 Base to Base</div>
-              </div>
-              <button class="btn-primary mini book-batch-direct-btn" data-batch="${escapeHtml(b)}" style="padding:7px 16px;font-size:12.5px;">Book This Batch ▸</button>
-            </div>
-          `).join('')}
-        </div>
-      `;
-      batchBlock.querySelectorAll('.book-batch-direct-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.preventDefault();
-          const bVal = btn.dataset.batch;
-          bookThis(sec.key, item.id, item, bVal);
-        });
-      });
-      leftCol.appendChild(batchBlock);
-    }
+
 
     // Payment Info Block (NO EMPTY BLOCKS)
     if(vis.payment !== false){
@@ -1101,11 +1106,11 @@
         </div>
         <div style="margin-bottom:18px;font-size:13.5px;color:var(--muted);">
           <div>📅 <strong>Dates:</strong> ${escapeHtml(item.dates || 'Regular batches')}</div>
-          ${(item.batches && item.batches.length > 0) ? `
+          ${(batches && batches.length > 0) ? `
             <div style="margin-top:10px;">
               <label for="detailBatchSelect" style="display:block;font-size:11.5px;font-weight:700;color:var(--forest,#1F4D36);text-transform:uppercase;margin-bottom:4px;">Select Preferred Batch:</label>
               <select id="detailBatchSelect" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff;color:var(--text);font-family:inherit;">
-                ${item.batches.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('')}
+                ${batches.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('')}
               </select>
             </div>
           ` : ''}
@@ -1707,12 +1712,15 @@
       { title: 'Book Your Adventure' }
     ]));
 
-    const master = $('#bookingFormMaster');
+    const master = document.getElementById('bookingFormMaster');
     if(master){
-      const clone = master.firstElementChild.cloneNode(true);
-      clone.id = 'booking_active';
-      view.appendChild(clone);
-      setTimeout(() => wireBookingForm(clone), 50);
+      const sourceEl = master.content ? master.content.firstElementChild : master.firstElementChild;
+      if(sourceEl){
+        const clone = sourceEl.cloneNode(true);
+        clone.id = 'booking_active';
+        view.appendChild(clone);
+        wireBookingForm(clone);
+      }
     }
     return view;
   }
@@ -1779,8 +1787,10 @@
 
     // After DOM updates, populate dropdowns and select the item
     setTimeout(() => {
-      const typeSel = $('#bkType');
-      const pkgSel  = $('#bkPkg');
+      // Use scoped selectors to avoid matching the hidden master booking form
+      const _bkRoot = document.getElementById('booking_active') || document.querySelector('#appMain section.booking') || document;
+      const typeSel = _bkRoot.querySelector('#bkType') || document.querySelector('#appMain #bkType');
+      const pkgSel  = _bkRoot.querySelector('#bkPkg')  || document.querySelector('#appMain #bkPkg');
 
       if(typeSel){
         populateBookingTypes(typeSel);
@@ -1806,14 +1816,15 @@
       }
 
       // Immediately refresh payment rules and batch options for selected adventure
-      const formEl = $('#bookingForm');
+      const activeBookingRoot = document.getElementById('booking_active') || document.querySelector('#appMain section.booking');
+      const formEl = activeBookingRoot ? activeBookingRoot.querySelector('#bookingForm') : document.querySelector('#appMain #bookingForm');
       if(formEl){
         updatePaymentOptionsForSelectedPackage(formEl);
         updateBatchOptionsForSelectedPackage(formEl, preferredBatch);
       }
 
       // Smooth scroll & highlight
-      const formCard = $('#bookingCard') || $('#booking');
+      const formCard = document.getElementById('booking_active') || document.getElementById('bookingCard') || document.querySelector('#appMain section.booking');
       if(formCard){
         formCard.scrollIntoView({ behavior:'smooth', block:'start' });
         [typeSel, pkgSel].forEach(el => {
@@ -1966,6 +1977,23 @@
     if(cashBox) cashBox.style.display = (cashEnabled && !isUpi) ? 'block' : 'none';
   }
 
+  // Returns the batches array for an item, falling back to item.dates string split
+  function getEffectiveBatches(item){
+    if(!item) return [];
+    if(Array.isArray(item.batches) && item.batches.length > 0){
+      return item.batches.filter(Boolean);
+    }
+    // Fallback: if batches is a newline/comma-separated string
+    if(typeof item.batches === 'string' && item.batches.trim()){
+      return item.batches.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+    }
+    // Legacy: item.dates may contain batch info as multi-line text
+    if(typeof item.dates === 'string' && item.dates.trim() && item.dates.includes('\n')){
+      return item.dates.split('\n').map(s => s.trim()).filter(Boolean);
+    }
+    return [];
+  }
+
   function updateBatchOptionsForSelectedPackage(form, preselectBatch){
     if(!form) return;
     const pkgSel = form.querySelector('#bkPkg');
@@ -1976,7 +2004,7 @@
     const dateLabel = form.querySelector('#bkDateLabel');
     if(!batchSel || !dateInput) return;
 
-    const batches = (item && Array.isArray(item.batches)) ? item.batches.filter(Boolean) : [];
+    const batches = getEffectiveBatches(item);
 
     if(batches.length > 0){
       batchSel.style.display = 'block';
