@@ -892,6 +892,7 @@
           ${item.cost ? `<span>💰 ₹${escapeHtml(item.cost)}</span>` : ''}
           ${item.days ? `<span>⏱ ${escapeHtml(item.days)}</span>` : ''}
           ${item.dates ? `<span>📅 ${escapeHtml(item.dates)}</span>` : ''}
+          ${item.subsection ? `<span>🏷️ ${escapeHtml(item.subsection)}</span>` : ''}
         </div>
       </div>
     `;
@@ -1106,6 +1107,7 @@
         </div>
         <div style="margin-bottom:18px;font-size:13.5px;color:var(--muted);">
           <div>📅 <strong>Dates:</strong> ${escapeHtml(item.dates || 'Regular batches')}</div>
+          ${item.subsection ? `<div style="margin-top:6px;">🏷️ <strong>Category:</strong> ${escapeHtml(item.subsection)}</div>` : ''}
           ${(batches && batches.length > 0) ? `
             <div style="margin-top:10px;">
               <label for="detailBatchSelect" style="display:block;font-size:11.5px;font-weight:700;color:var(--forest,#1F4D36);text-transform:uppercase;margin-bottom:4px;">Select Preferred Batch:</label>
