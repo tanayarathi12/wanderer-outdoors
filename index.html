@@ -127,8 +127,9 @@
             <input id="bkPhone" name="phone" type="tel" placeholder="10-digit mobile number" autocomplete="tel" />
             <div class="err"></div>
           </div>
-          <div class="field" data-field="date">
-            <label for="bkDate">Preferred date<span class="req">*</span></label>
+          <div class="field" data-field="date" id="bookingDateFieldWrap">
+            <label for="bkDate" id="bkDateLabel">Preferred date<span class="req">*</span></label>
+            <select id="bkBatch" name="batch" style="display:none;margin-bottom:6px;"></select>
             <input id="bkDate" name="date" type="date" />
             <div class="err"></div>
           </div>

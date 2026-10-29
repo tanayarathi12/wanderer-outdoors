@@ -57,7 +57,37 @@
 
     if(Array.isArray(remote.sections) && remote.sections.length){
       d.sections = remote.sections.map(sec => {
-        sec.items = (sec.items || []).map(it => window.WO_normalizeItem ? window.WO_normalizeItem(it) : it);
+        const defSec = (DEFAULT_STATE.sections || []).find(s => s.key === sec.key || s.id === sec.id);
+        if(sec.subsections === undefined && defSec && Array.isArray(defSec.subsections)){
+          sec.subsections = deepClone(defSec.subsections);
+        } else if(!Array.isArray(sec.subsections)){
+          sec.subsections = [];
+        }
+
+        // Merge any new default items (e.g. Kids Camps, Wildlife, International) if missing from remote
+        if(defSec && Array.isArray(defSec.items)){
+          const existingIds = new Set((sec.items || []).map(x => x.id || x.name));
+          defSec.items.forEach(dIt => {
+            if(!existingIds.has(dIt.id) && !existingIds.has(dIt.name)){
+              (sec.items = sec.items || []).push(deepClone(dIt));
+            }
+          });
+        }
+
+        sec.items = (sec.items || []).map(it => {
+          if(defSec && Array.isArray(defSec.items)){
+            const dIt = defSec.items.find(x => x.id === it.id);
+            if(dIt){
+              if((!it.batches || !it.batches.length) && dIt.batches && dIt.batches.length){
+                it.batches = dIt.batches.slice();
+              }
+              if(!it.subsection && dIt.subsection){
+                it.subsection = dIt.subsection;
+              }
+            }
+          }
+          return window.WO_normalizeItem ? window.WO_normalizeItem(it) : it;
+        });
         return sec;
       });
     }
@@ -638,6 +668,47 @@
       return view;
     }
 
+    // Subsections Filter Tabs (Interactive & Editable)
+    let activeSubsection = 'all';
+    const validSubsections = (sec.subsections || []).map(s => String(s || '').trim()).filter(Boolean);
+    let subTabsBar = null;
+
+    if (validSubsections.length > 0) {
+      subTabsBar = document.createElement('div');
+      subTabsBar.className = 'category-subsections-bar';
+
+      function renderSubTabs() {
+        subTabsBar.innerHTML = '';
+        const allBtn = document.createElement('button');
+        allBtn.className = 'subsec-tab-btn' + (activeSubsection === 'all' ? ' active' : '');
+        allBtn.textContent = 'All (' + (sec.items || []).length + ')';
+        allBtn.addEventListener('click', () => {
+          activeSubsection = 'all';
+          renderSubTabs();
+          const sInp = view.querySelector('#categorySearchInput');
+          renderCards(sInp ? sInp.value : '');
+        });
+        subTabsBar.appendChild(allBtn);
+
+        validSubsections.forEach(subName => {
+          const count = (sec.items || []).filter(it => (it.subsection || '').toLowerCase() === subName.toLowerCase()).length;
+          const btn = document.createElement('button');
+          btn.className = 'subsec-tab-btn' + (activeSubsection.toLowerCase() === subName.toLowerCase() ? ' active' : '');
+          btn.textContent = subName + ' (' + count + ')';
+          btn.addEventListener('click', () => {
+            activeSubsection = subName;
+            renderSubTabs();
+            const sInp = view.querySelector('#categorySearchInput');
+            renderCards(sInp ? sInp.value : '');
+          });
+          subTabsBar.appendChild(btn);
+        });
+      }
+
+      renderSubTabs();
+      view.appendChild(subTabsBar);
+    }
+
     // Search and filter input
     const filterBar = document.createElement('div');
     filterBar.className = 'filter-bar';
@@ -656,14 +727,25 @@
       grid.innerHTML = '';
       const q = filterText.toLowerCase().trim();
       const items = (sec.items || []).filter(it => {
+        if(activeSubsection !== 'all'){
+          if((it.subsection || '').toLowerCase() !== activeSubsection.toLowerCase()){
+            return false;
+          }
+        }
         if(!q) return true;
         return (it.name || '').toLowerCase().includes(q) ||
                (it.dates || '').toLowerCase().includes(q) ||
+               (it.subsection || '').toLowerCase().includes(q) ||
+               (it.batches || []).some(b => String(b).toLowerCase().includes(q)) ||
                (it.cost || '').toLowerCase().includes(q) ||
                (it.desc || '').toLowerCase().includes(q);
       });
+      const countLabel = view.querySelector('#itemCountLabel');
+      if(countLabel){
+        countLabel.textContent = items.length + ' adventure' + (items.length === 1 ? '' : 's') + ' available';
+      }
       if(!items.length){
-        grid.innerHTML = `<p class="muted" style="grid-column:1/-1;padding:40px;text-align:center;">No matching adventures found for "${escapeHtml(filterText)}".</p>`;
+        grid.innerHTML = `<p class="muted" style="grid-column:1/-1;padding:40px;text-align:center;">No matching adventures found in this category.</p>`;
         return;
       }
       items.forEach(it => {
@@ -719,7 +801,14 @@
         <div class="trip-card-meta">
           ${item.dates ? `<span>📅 ${escapeHtml(item.dates)}</span>` : ''}
           ${item.days ? `<span>⏱ ${escapeHtml(item.days)}</span>` : ''}
+          ${item.subsection ? `<span class="trip-subsec-badge">🏷️ ${escapeHtml(item.subsection)}</span>` : ''}
         </div>
+        ${(item.batches && item.batches.length > 0) ? `
+          <div class="trip-card-batches">
+            <small>⚡ Upcoming Batches:</small>
+            <span>${escapeHtml(item.batches.slice(0, 2).join(' · '))}${item.batches.length > 2 ? ' +' + (item.batches.length - 2) + ' more' : ''}</span>
+          </div>
+        ` : ''}
         ${item.desc ? `<p class="trip-card-desc">${escapeHtml(item.desc)}</p>` : ''}
         <div class="trip-card-footer">
           <div class="trip-card-price">
@@ -940,6 +1029,36 @@
       leftCol.appendChild(faqBlock);
     }
 
+    // Upcoming Batches & Schedule Block
+    const batches = Array.isArray(item.batches) ? item.batches.filter(Boolean) : [];
+    if(batches.length > 0){
+      const batchBlock = document.createElement('div');
+      batchBlock.className = 'trip-block';
+      batchBlock.innerHTML = `
+        <h3>📅 Upcoming Departure Batches</h3>
+        <p class="muted" style="font-size:13.5px;margin-bottom:14px;">Select from our scheduled departure dates below to reserve your spot.</p>
+        <div class="batch-list-grid">
+          ${batches.map(b => `
+            <div class="batch-row" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--bg-soft,#f7f5f0);border-radius:10px;border:1px solid var(--line);margin-bottom:8px;gap:12px;flex-wrap:wrap;">
+              <div>
+                <strong style="color:var(--forest,#1F4D36);font-size:14px;">📅 ${escapeHtml(b)}</strong>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px;">⏱ ${escapeHtml(item.days || 'Guided adventure')} · 📍 Base to Base</div>
+              </div>
+              <button class="btn-primary mini book-batch-direct-btn" data-batch="${escapeHtml(b)}" style="padding:7px 16px;font-size:12.5px;">Book This Batch ▸</button>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      batchBlock.querySelectorAll('.book-batch-direct-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          const bVal = btn.dataset.batch;
+          bookThis(sec.key, item.id, item, bVal);
+        });
+      });
+      leftCol.appendChild(batchBlock);
+    }
+
     // Payment Info Block (NO EMPTY BLOCKS)
     if(vis.payment !== false){
       const payBlock = document.createElement('div');
@@ -982,7 +1101,15 @@
         </div>
         <div style="margin-bottom:18px;font-size:13.5px;color:var(--muted);">
           <div>📅 <strong>Dates:</strong> ${escapeHtml(item.dates || 'Regular batches')}</div>
-          <div style="margin-top:4px;">⏱ <strong>Duration:</strong> ${escapeHtml(item.days || 'Guided trip')}</div>
+          ${(item.batches && item.batches.length > 0) ? `
+            <div style="margin-top:10px;">
+              <label for="detailBatchSelect" style="display:block;font-size:11.5px;font-weight:700;color:var(--forest,#1F4D36);text-transform:uppercase;margin-bottom:4px;">Select Preferred Batch:</label>
+              <select id="detailBatchSelect" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff;color:var(--text);font-family:inherit;">
+                ${item.batches.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('')}
+              </select>
+            </div>
+          ` : ''}
+          <div style="margin-top:8px;">⏱ <strong>Duration:</strong> ${escapeHtml(item.days || 'Guided trip')}</div>
           <div style="margin-top:4px;">📍 <strong>Pick-up:</strong> Ex-Pune / Base village</div>
         </div>
         <button class="btn-primary trip-book-cta" id="detailBookBtn">Book This Adventure ▸</button>
@@ -991,7 +1118,9 @@
         </div>
       `;
       bookCard.querySelector('#detailBookBtn').addEventListener('click', () => {
-        bookThis(sec.key, item.id, item);
+        const batchSelect = bookCard.querySelector('#detailBatchSelect');
+        const selectedBatch = batchSelect ? batchSelect.value : '';
+        bookThis(sec.key, item.id, item, selectedBatch);
       });
       rightCol.appendChild(bookCard);
     }
@@ -1620,7 +1749,7 @@
   // --------------------------------------------------------------
   // UNIVERSAL "BOOK NOW" HANDLER (Requirement 2: Fix Book Now everywhere)
   // --------------------------------------------------------------
-  window.bookThis = function(secKey, itemId, itemData){
+  window.bookThis = function(secKey, itemId, itemData, preferredBatch){
     // Resolve section and item
     let targetSec = findSection(secKey);
     let targetItem = itemData || null;
@@ -1676,10 +1805,11 @@
         if(pkgId) pkgSel.value = pkgId;
       }
 
-      // Immediately refresh payment rules (UPI, QR code, Cash/Pay Later) for selected adventure
+      // Immediately refresh payment rules and batch options for selected adventure
       const formEl = $('#bookingForm');
       if(formEl){
         updatePaymentOptionsForSelectedPackage(formEl);
+        updateBatchOptionsForSelectedPackage(formEl, preferredBatch);
       }
 
       // Smooth scroll & highlight
@@ -1836,6 +1966,51 @@
     if(cashBox) cashBox.style.display = (cashEnabled && !isUpi) ? 'block' : 'none';
   }
 
+  function updateBatchOptionsForSelectedPackage(form, preselectBatch){
+    if(!form) return;
+    const pkgSel = form.querySelector('#bkPkg');
+    const pkgId = pkgSel ? pkgSel.value : '';
+    const item = getSelectedItemData(pkgId);
+    const batchSel = form.querySelector('#bkBatch');
+    const dateInput = form.querySelector('#bkDate');
+    const dateLabel = form.querySelector('#bkDateLabel');
+    if(!batchSel || !dateInput) return;
+
+    const batches = (item && Array.isArray(item.batches)) ? item.batches.filter(Boolean) : [];
+
+    if(batches.length > 0){
+      batchSel.style.display = 'block';
+      if(dateLabel) dateLabel.innerHTML = 'Preferred Batch / Departure Date<span class="req">*</span>';
+      
+      const prevVal = preselectBatch || batchSel.value;
+      batchSel.innerHTML = '<option value="">-- Choose your preferred batch --</option>';
+      batches.forEach(b => {
+        const o = document.createElement('option');
+        o.value = b;
+        o.textContent = b;
+        batchSel.appendChild(o);
+      });
+      const customOpt = document.createElement('option');
+      customOpt.value = '__custom__';
+      customOpt.textContent = '📅 Choose a custom / other date…';
+      batchSel.appendChild(customOpt);
+
+      if(prevVal && Array.prototype.some.call(batchSel.options, o => o.value === prevVal)){
+        batchSel.value = prevVal;
+      }
+
+      if(batchSel.value === '__custom__'){
+        dateInput.style.display = 'block';
+      } else {
+        dateInput.style.display = 'none';
+      }
+    } else {
+      batchSel.style.display = 'none';
+      dateInput.style.display = 'block';
+      if(dateLabel) dateLabel.innerHTML = 'Preferred date<span class="req">*</span>';
+    }
+  }
+
   // --------------------------------------------------------------
   // Booking Form Wiring & Submission Logic
   // --------------------------------------------------------------
@@ -1865,16 +2040,31 @@
     populateBookingTypes(typeSel);
     populatePackages(typeSel, pkgSel);
 
+    const batchSel = root.querySelector('#bkBatch');
+    const dateInput = root.querySelector('#bkDate');
+    if(batchSel && dateInput){
+      batchSel.addEventListener('change', () => {
+        if(batchSel.value === '__custom__'){
+          dateInput.style.display = 'block';
+          dateInput.focus();
+        } else {
+          dateInput.style.display = 'none';
+        }
+      });
+    }
+
     if(typeSel){
       typeSel.addEventListener('change', () => {
         populatePackages(typeSel, pkgSel);
         updatePaymentOptionsForSelectedPackage(form);
+        updateBatchOptionsForSelectedPackage(form);
       });
     }
 
     if(pkgSel){
       pkgSel.addEventListener('change', () => {
         updatePaymentOptionsForSelectedPackage(form);
+        updateBatchOptionsForSelectedPackage(form);
       });
     }
 
@@ -1885,6 +2075,7 @@
     });
 
     updatePaymentOptionsForSelectedPackage(form);
+    updateBatchOptionsForSelectedPackage(form);
     form.addEventListener('submit', handleBookingSubmit);
   }
 
@@ -1915,13 +2106,21 @@
     if(!phone) errs.phone = 'Please enter your mobile phone number.';
     else if(digits.length < 10 || digits.length > 15) errs.phone = 'Enter a valid 10-digit mobile number.';
 
-    const date = v('date');
-    if(!date) errs.date = 'Choose your preferred date.';
-    else {
-      const d = new Date(date + 'T00:00:00');
-      const today = new Date(); today.setHours(0,0,0,0);
-      if(isNaN(d.getTime())) errs.date = 'Date looks invalid.';
-      else if(d < today) errs.date = 'Please pick today or a future date.';
+    const batchSel = form.querySelector('#bkBatch');
+    const isBatchActive = batchSel && batchSel.style.display !== 'none';
+    const batchVal = isBatchActive ? batchSel.value : '';
+
+    if(isBatchActive && batchVal !== '__custom__'){
+      if(!batchVal) errs.date = 'Please choose your preferred batch.';
+    } else {
+      const date = v('date');
+      if(!date) errs.date = 'Choose your preferred date.';
+      else {
+        const d = new Date(date + 'T00:00:00');
+        const today = new Date(); today.setHours(0,0,0,0);
+        if(isNaN(d.getTime())) errs.date = 'Date looks invalid.';
+        else if(d < today) errs.date = 'Please pick today or a future date.';
+      }
     }
 
     const people = v('people');
@@ -1977,11 +2176,23 @@
     const typeText = (typeSel && typeSel.selectedOptions[0]) ? typeSel.selectedOptions[0].textContent : '';
     const pkgText  = (pkgSel && pkgSel.selectedOptions[0]) ? pkgSel.selectedOptions[0].textContent : '';
 
-    const dateVal = v('date');
-    let dateFormatted = dateVal;
-    if(dateVal){
-      const d = new Date(dateVal + 'T00:00:00');
-      if(!isNaN(d.getTime())) dateFormatted = d.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+    const batchSel = form.querySelector('#bkBatch');
+    const isBatchActive = batchSel && batchSel.style.display !== 'none';
+    const batchVal = isBatchActive ? batchSel.value : '';
+
+    let dateFormatted = '';
+    let rawTravelDate = '';
+    if(isBatchActive && batchVal && batchVal !== '__custom__'){
+      dateFormatted = batchVal;
+      rawTravelDate = batchVal;
+    } else {
+      const dateVal = v('date');
+      rawTravelDate = dateVal;
+      dateFormatted = dateVal;
+      if(dateVal){
+        const d = new Date(dateVal + 'T00:00:00');
+        if(!isNaN(d.getTime())) dateFormatted = d.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+      }
     }
 
     // Payment Method & Status Determination (Requirements 1, 2, 3)
@@ -2021,7 +2232,8 @@
       email: v('email'),
       phone: v('phone'),
       date: dateFormatted,
-      travel_date: dateVal,
+      travel_date: rawTravelDate,
+      batch: (isBatchActive && batchVal !== '__custom__') ? batchVal : '',
       people: v('people'),
       type: typeText,
       trip_kind: typeText,

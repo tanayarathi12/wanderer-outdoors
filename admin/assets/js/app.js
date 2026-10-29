@@ -83,7 +83,36 @@
     }
     if (Array.isArray(remote.sections)) {
       d.sections = remote.sections.map(function(s){
-        s.items = (s.items || []).map(function(it){ return window.WO_normalizeItem ? window.WO_normalizeItem(it) : it; });
+        var defSec = (window.WO_DEFAULTS && window.WO_DEFAULTS.sections ? window.WO_DEFAULTS.sections : []).find(function(ds){ return ds.key === s.key || ds.id === s.id; });
+        if (s.subsections === undefined && defSec && Array.isArray(defSec.subsections)) {
+          s.subsections = defSec.subsections.slice();
+        } else if (!Array.isArray(s.subsections)) {
+          s.subsections = [];
+        }
+
+        if(defSec && Array.isArray(defSec.items)){
+          var existingIds = (s.items || []).map(function(x){ return x.id || x.name; });
+          defSec.items.forEach(function(dIt){
+            if(existingIds.indexOf(dIt.id) === -1 && existingIds.indexOf(dIt.name) === -1){
+              (s.items = s.items || []).push(JSON.parse(JSON.stringify(dIt)));
+            }
+          });
+        }
+
+        s.items = (s.items || []).map(function(it){
+          if(defSec && Array.isArray(defSec.items)){
+            var dIt = defSec.items.find(function(x){ return x.id === it.id; });
+            if(dIt){
+              if((!it.batches || !it.batches.length) && dIt.batches && dIt.batches.length){
+                it.batches = dIt.batches.slice();
+              }
+              if(!it.subsection && dIt.subsection){
+                it.subsection = dIt.subsection;
+              }
+            }
+          }
+          return window.WO_normalizeItem ? window.WO_normalizeItem(it) : it;
+        });
         return s;
       });
     }
@@ -674,6 +703,87 @@
         text("Homepage category pill destination", sec.buttonLinks.nav || ("#/" + sec.key), function(v){ sec.buttonLinks.nav=v; }, {placeholder:"#/treks, #/contact, https://…"})
       ]));
 
+      // Subsections / Subcategories Management
+      sec.subsections = Array.isArray(sec.subsections) ? sec.subsections : [];
+      var subCard = el("div", { class: "card", style: { background: "#131d16", border: "1px solid #233b2a", margin: "14px 0", padding: "14px 16px" } });
+      subCard.appendChild(el("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" } }, [
+        el("strong", { style: { color: "#6cc28f", fontSize: "14px" } }, ["📂 Subsections / Categories for " + (sec.title || sec.key)]),
+        el("span", { class: "muted", style: { fontSize: "12px" } }, [sec.subsections.length + " subsection" + (sec.subsections.length === 1 ? "" : "s")])
+      ]));
+      subCard.appendChild(el("p", { class: "tip", style: { margin: "0 0 10px 0", fontSize: "12.5px", color: "#a0b0a6" } }, [
+        "Organize trips into interactive category tabs on the website (e.g. Kids Camps, Adults Adventure, Family Tours, Wildlife, International, Backpacking / Road Trip). If you delete all subsections or leave this empty, the website will display all trips together as normal without tabs."
+      ]));
+
+      var subListWrap = el("div", { style: { display: "flex", flexDirection: "column", gap: "6px", marginBottom: "10px" } });
+      if (sec.subsections.length === 0) {
+        subListWrap.appendChild(el("div", { style: { fontSize: "12.5px", color: "#8a968e", fontStyle: "italic", padding: "4px 0" } }, [
+          "No subsections active. All trips in this category will display in one standard grid."
+        ]));
+      } else {
+        sec.subsections.forEach(function (subName, subIdx) {
+          var row = el("div", { style: { display: "flex", gap: "8px", alignItems: "center" } }, [
+            el("input", {
+              type: "text",
+              value: subName,
+              placeholder: "Subsection Name",
+              style: { flex: 1, padding: "6px 10px", fontSize: "13px", background: "#0c140f", border: "1px solid #243c2a", borderRadius: "6px", color: "#fff" },
+              oninput: function(e){
+                sec.subsections[subIdx] = e.target.value.trim();
+                markDirty();
+              }
+            }),
+            el("button", {
+              class: "btn btn-ghost mini",
+              title: "Move up",
+              onclick: function(e){
+                e.preventDefault();
+                if (subIdx > 0) {
+                  sec.subsections.splice(subIdx - 1, 0, sec.subsections.splice(subIdx, 1)[0]);
+                  markDirty();
+                  showPanel("sections");
+                }
+              }
+            }, ["↑"]),
+            el("button", {
+              class: "btn btn-ghost mini",
+              title: "Move down",
+              onclick: function(e){
+                e.preventDefault();
+                if (subIdx < sec.subsections.length - 1) {
+                  sec.subsections.splice(subIdx + 1, 0, sec.subsections.splice(subIdx, 1)[0]);
+                  markDirty();
+                  showPanel("sections");
+                }
+              }
+            }, ["↓"]),
+            el("button", {
+              class: "btn btn-danger mini",
+              title: "Delete subsection",
+              onclick: function(e){
+                e.preventDefault();
+                sec.subsections.splice(subIdx, 1);
+                markDirty();
+                showPanel("sections");
+              }
+            }, ["✕"])
+          ]);
+          subListWrap.appendChild(row);
+        });
+      }
+      subCard.appendChild(subListWrap);
+
+      subCard.appendChild(el("button", {
+        class: "btn btn-ghost mini",
+        style: { fontSize: "12px", border: "1px dashed #3a5c43" },
+        onclick: function(e){
+          e.preventDefault();
+          sec.subsections.push("New Subsection");
+          markDirty();
+          showPanel("sections");
+        }
+      }, ["+ Add Subsection / Category"]));
+      block.appendChild(subCard);
+
       // Individual Trips List in this category
       block.appendChild(el("h3", { style: { fontSize: "15px", marginTop: "16px", color: "#d9582b" } }, [
         "Adventures & Packages in " + (sec.title || sec.key)
@@ -711,9 +821,38 @@
           text("Cost (INR)", item.cost, function (v) { item.cost = v; })
         ]));
         itContent.appendChild(el("div", { class: "grid2" }, [
-          text("Dates (e.g. 20th Sept or Dec - Feb)", item.dates, function (v) { item.dates = v; }),
+          text("Dates Summary (e.g. 20th Sept or Dec - Feb)", item.dates, function (v) { item.dates = v; }),
           text("Duration (e.g. 1 day or 6 days)", item.days, function (v) { item.days = v; })
         ]));
+
+        // Subsection Assignment
+        if (sec.subsections && sec.subsections.length > 0) {
+          var subOpts = [el("option", { value: "" }, ["-- None / Default (shows under All) --"])];
+          sec.subsections.forEach(function(sub){
+            var opt = el("option", { value: sub }, [sub]);
+            if (item.subsection === sub) opt.selected = true;
+            subOpts.push(opt);
+          });
+          var subSelect = el("select", {
+            style: { width: "100%", padding: "8px 10px", background: "#0c140f", border: "1px solid #243c2a", borderRadius: "6px", color: "#fff", fontSize: "13px" },
+            onchange: function(e){ item.subsection = e.target.value; markDirty(); }
+          }, subOpts);
+          itContent.appendChild(el("div", { style: { margin: "10px 0" } }, [
+            el("label", { style: { display: "block", fontSize: "12.5px", fontWeight: "600", marginBottom: "4px", color: "#6cc28f" } }, [
+              "Assigned Subsection / Category"
+            ]),
+            subSelect
+          ]));
+        }
+
+        // Upcoming Batches / Departure Dates
+        var batchStr = (item.batches || []).join("\n");
+        itContent.appendChild(text("Upcoming Batches / Departure Dates (one per line, e.g. '15–20 Dec 2026' or 'Batch 1: 24–29 Dec (Christmas)')", batchStr, function(v){
+          item.batches = v.split("\n").map(function(s){ return s.trim(); }).filter(Boolean);
+        }, {
+          textarea: true,
+          placeholder: "15–20 Dec 2026\n24–29 Dec 2026 (Christmas Special)\n29 Dec 2026 – 03 Jan 2027 (New Year Summit)\n12–17 Jan 2027"
+        }));
 
         // Cover Image (Upload or URL)
         var coverUrl = (item.coverImage && item.coverImage.url) ? item.coverImage.url : "";

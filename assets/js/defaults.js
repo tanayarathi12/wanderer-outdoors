@@ -75,6 +75,14 @@
     }
 
     // Normalize visibility toggles
+    // Normalize batches
+    var batches = [];
+    if (Array.isArray(it.batches)) {
+      batches = it.batches.map(function(b){ return String(b || '').trim(); }).filter(Boolean);
+    } else if (typeof it.batches === 'string') {
+      batches = it.batches.split('\n').map(function(b){ return b.trim(); }).filter(Boolean);
+    }
+
     var vis = it.visibility || {};
     var defaultVis = {
       description: it.desc ? true : false,
@@ -109,6 +117,8 @@
       cost: it.cost || '',
       dates: it.dates || '',
       days: it.days || '',
+      batches: batches,
+      subsection: it.subsection || '',
       coverImage: cover,
       gallery: gallery,
       desc: it.desc || '',
@@ -263,6 +273,7 @@
         items: [
           normalizeItem({
             id: 't_devkund', name: 'Devkund Waterfall Trek', cost: '1,399', dates: '20th Sept (Sunday)', days: '1 day',
+            batches: ['Every Saturday & Sunday', '15 Nov 2026', '22 Nov 2026', '29 Nov 2026', '06 Dec 2026'],
             coverImage: { url: PH.trek, path: '' },
             desc: 'A mesmerizing forest trek through the Bhira village trail leading to the azure pool of Devkund Waterfall.',
             highlights: ['Bhira dam backwaters', 'Dense forest trail', 'Natural plunge pool', 'Breakfast & authentic Maharashtrian lunch'],
@@ -280,6 +291,7 @@
           }),
           normalizeItem({
             id: 't_rajgad', name: 'Rajgad Fort Trek — Special Flowering Season', cost: '1,399', dates: '2nd Oct 2026', days: '1 day',
+            batches: ['Batch 1: 08 Nov 2026', 'Batch 2: 15 Nov 2026', 'Batch 3: 22 Nov 2026', 'Batch 4: 29 Nov 2026'],
             coverImage: { url: PH.trek2, path: '' },
             desc: 'Explore the King of Forts during peak wildflower bloom. Walk through Padmavati Machee, Suvela Machi and enjoy breathtaking Sahyadri views.',
             highlights: ['Historic Capital of the Maratha Empire', 'Suvela Machi nedhe (needle hole rock)', 'Wildflower carpet', 'Authentic rustic lunch'],
@@ -329,9 +341,26 @@
         intro: 'Multi-day guided camps in snow-clad Himalayan meadows, with shelter, meals, gear and trained leaders.',
         bg: '', bookType: 'Winter Camp',
         gallery: [PH.snow, PH.snow2, PH.snow3],
+        subsections: [
+          'Kids Camps',
+          'Adults Adventure',
+          'Family Tours',
+          'Wildlife',
+          'International',
+          'Backpacking / Road Trip'
+        ],
         items: [
           normalizeItem({
             id: 'w_kedarkantha', name: 'Kedarkantha Winter Summit Trek', cost: '6,999', dates: 'Dec – Feb', days: '6 days',
+            subsection: 'Adults Adventure',
+            batches: [
+              '15–20 Dec 2026',
+              '22–27 Dec 2026 (Christmas Special)',
+              '29 Dec 2026 – 03 Jan 2027 (New Year Summit)',
+              '12–17 Jan 2027',
+              '24–29 Jan 2027 (Republic Day Weekend)',
+              '09–14 Feb 2027'
+            ],
             coverImage: { url: PH.snow, path: '' },
             desc: 'The classic winter summit trek of Uttarakhand with 360-degree snow peaks and enchanting pine clearings.',
             highlights: ['12,500 ft summit sunrise', 'Juda Ka Talab frozen lake campsite', 'Snow-covered pine forests'],
@@ -342,21 +371,82 @@
           }),
           normalizeItem({
             id: 'w_brahmatal', name: 'Brahmatal Winter Trek', cost: '7,499', dates: 'Dec – Mar', days: '6 days',
+            subsection: 'Backpacking / Road Trip',
+            batches: [
+              '18–23 Dec 2026',
+              '26–31 Dec 2026 (New Year Special)',
+              '15–20 Jan 2027',
+              '12–17 Feb 2027'
+            ],
             coverImage: { url: PH.snow2, path: '' },
             desc: 'Frozen alpine lake trek offering majestic panoramas of Mt. Trishul and Mt. Nanda Ghunti.',
             visibility: { description: true, highlights: false, itinerary: false, inclusions: true, exclusions: true, thingsToCarry: true, faq: false, gallery: true, payment: true, booking: true }
           }),
           normalizeItem({
             id: 'w_deoriatal', name: 'Deoriatal – Chandrashila Winter Camp', cost: '5,499', dates: 'Dec – Mar', days: '5 days',
+            subsection: 'Family Tours',
+            batches: [
+              '20–24 Dec 2026',
+              '28 Dec 2026 – 01 Jan 2027',
+              '23–27 Jan 2027',
+              '14–18 Feb 2027'
+            ],
             coverImage: { url: PH.snow3, path: '' },
             desc: 'Camp by the emerald waters of Deoria Tal and summit to Tungnath, the highest Shiva temple in the world.',
             visibility: { description: true, highlights: false, itinerary: false, inclusions: true, exclusions: true, thingsToCarry: true, faq: false, gallery: true, payment: true, booking: true }
           }),
           normalizeItem({
             id: 'w_kuari', name: 'Kuari Pass Winter Trek', cost: '8,999', dates: 'Jan – Mar', days: '7 days',
+            subsection: 'Adults Adventure',
+            batches: [
+              '05–11 Jan 2027',
+              '21–27 Jan 2027',
+              '08–14 Feb 2027'
+            ],
             coverImage: { url: PH.snow, path: '' },
             desc: 'The historic Curzon trail with up-close views of Nanda Devi, Kamet and Dronagiri.',
             visibility: { description: true, highlights: false, itinerary: false, inclusions: true, exclusions: true, thingsToCarry: true, faq: false, gallery: true, payment: true, booking: true }
+          }),
+          normalizeItem({
+            id: 'w_kids_manali', name: 'Manali Snow & Adventure Camp for Kids', cost: '8,499', dates: 'Dec – Jan (School Vacations)', days: '5 days',
+            subsection: 'Kids Camps',
+            batches: [
+              '22–26 Dec 2026 (Christmas Vacation)',
+              '27–31 Dec 2026 (Winter Break)',
+              '03–07 Jan 2027'
+            ],
+            coverImage: { url: PH.snow2, path: '' },
+            desc: 'A safe, fun-filled snow camping program specially designed for kids and young adventurers with trained outdoor educators.',
+            highlights: ['Snow igloo & snowman activities', 'Basic survival & compass skills', 'Bonfire & star observation', '1:5 instructor to child ratio'],
+            inclusions: ['Cottage / heated tent stay', 'Nutritious warm meals', 'Certified outdoor instructors', 'Equipment & safety gear'],
+            visibility: { description: true, highlights: true, itinerary: false, inclusions: true, exclusions: false, thingsToCarry: true, faq: false, gallery: true, payment: true, booking: true }
+          }),
+          normalizeItem({
+            id: 'w_wildlife_ranthambore', name: 'Ranthambore Winter Tiger Safari & Camp', cost: '11,999', dates: 'Nov – Feb', days: '3 days',
+            subsection: 'Wildlife',
+            batches: [
+              '11–13 Dec 2026',
+              '25–27 Dec 2026',
+              '15–17 Jan 2027',
+              '05–07 Feb 2027'
+            ],
+            coverImage: { url: PH.camp, path: '' },
+            desc: 'Thrilling winter jungle safari tracking Bengal tigers and exotic migratory birds in the mist of Ranthambore.',
+            highlights: ['2 Core zone open Gypsy safaris', 'Naturalist guided trail', 'Luxury tented camp', 'Evening campfire talks'],
+            visibility: { description: true, highlights: true, itinerary: false, inclusions: true, exclusions: false, thingsToCarry: true, faq: false, gallery: true, payment: true, booking: true }
+          }),
+          normalizeItem({
+            id: 'w_intl_vietnam', name: 'Vietnam Northern Highlands & Halong Bay', cost: '44,999', dates: 'Dec – Feb', days: '7 days',
+            subsection: 'International',
+            batches: [
+              '20–26 Dec 2026',
+              '10–16 Jan 2027',
+              '07–13 Feb 2027'
+            ],
+            coverImage: { url: PH.tour2, path: '' },
+            desc: 'Winter expedition across Hanoi, Sapa misty rice terraces, and an overnight cruise in emerald Halong Bay.',
+            highlights: ['Sapa mountain trekking', 'Halong Bay luxury cruise', 'Hanoi street food exploration'],
+            visibility: { description: true, highlights: true, itinerary: false, inclusions: true, exclusions: false, thingsToCarry: true, faq: false, gallery: true, payment: true, booking: true }
           })
         ]
       },
@@ -367,7 +457,7 @@
         gallery: [PH.summer, PH.summer2, PH.summer3],
         items: [
           normalizeItem({
-            id: 's_hampta', name: 'Hampta Pass Summer Trek', cost: '6,999', dates: 'Jun – Sep', days: '5 days',
+            id: 's_hampta', name: 'Hampta Pass Summer Trek', cost: '6,999', dates: 'Jun – Sep', days: '5 days', batches: ['10–14 Jun 2027', '24–28 Jun 2027', '08–12 Jul 2027', '22–26 Jul 2027'],
             coverImage: { url: PH.summer, path: '' },
             desc: 'A dramatic pass crossing from the lush green valleys of Kullu to the stark desert landscapes of Lahaul.',
             highlights: ['Crossover trek experience', 'Chandratal high-altitude moon lake', 'Shea Goru river crossing'],
