@@ -64,30 +64,15 @@
           sec.subsections = [];
         }
 
-        // Merge any new default items (e.g. Kids Camps, Wildlife, International) if missing from remote
-        if(defSec && Array.isArray(defSec.items)){
-          const existingIds = new Set((sec.items || []).map(x => x.id || x.name));
-          defSec.items.forEach(dIt => {
-            if(!existingIds.has(dIt.id) && !existingIds.has(dIt.name)){
-              (sec.items = sec.items || []).push(deepClone(dIt));
-            }
-          });
-        }
-
-        sec.items = (sec.items || []).map(it => {
-          if(defSec && Array.isArray(defSec.items)){
-            const dIt = defSec.items.find(x => x.id === it.id);
-            if(dIt){
-              if((!it.batches || !it.batches.length) && dIt.batches && dIt.batches.length){
-                it.batches = dIt.batches.slice();
-              }
-              if(!it.subsection && dIt.subsection){
-                it.subsection = dIt.subsection;
-              }
-            }
-          }
-          return window.WO_normalizeItem ? window.WO_normalizeItem(it) : it;
-        });
+        // NOTE: Default items are NOT auto-inserted here – doing so would undo user deletions.
+        // Strip lingering built-in default IDs that the editor has permanently deleted:
+        const PURGED_DEFAULT_IDS = new Set([
+          'w_kedarkantha','w_brahmatal','w_deoriatal','w_kuari',
+          'w_kids_manali','w_wildlife_ranthambore','w_intl_vietnam'
+        ]);
+        sec.items = (sec.items || [])
+          .filter(it => !PURGED_DEFAULT_IDS.has(it.id))
+          .map(it => window.WO_normalizeItem ? window.WO_normalizeItem(it) : it);
         return sec;
       });
     }
@@ -883,6 +868,11 @@
     const hero = document.createElement('div');
     hero.className = 'trip-hero';
     if(coverUrl) hero.style.backgroundImage = `url('${coverUrl}')`;
+    if(item.imageFit === 'contain'){
+      hero.style.backgroundSize = 'contain';
+      hero.style.backgroundRepeat = 'no-repeat';
+      hero.style.backgroundColor = '#0c140f';
+    }
     hero.innerHTML = `
       <div class="trip-hero-overlay"></div>
       <div class="trip-hero-content">
@@ -893,6 +883,7 @@
           ${item.days ? `<span>⏱ ${escapeHtml(item.days)}</span>` : ''}
           ${item.dates ? `<span>📅 ${escapeHtml(item.dates)}</span>` : ''}
           ${item.subsection ? `<span>🏷️ ${escapeHtml(item.subsection)}</span>` : ''}
+          ${item.pickup ? `<span>📍 ${escapeHtml(item.pickup)}</span>` : ''}
         </div>
       </div>
     `;
@@ -951,7 +942,7 @@
             <div class="batch-row" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--bg-soft,#f7f5f0);border-radius:10px;border:1px solid var(--line);margin-bottom:8px;gap:12px;flex-wrap:wrap;">
               <div>
                 <strong style="color:var(--forest,#1F4D36);font-size:14px;">📅 ${escapeHtml(b)}</strong>
-                <div style="font-size:12px;color:var(--muted);margin-top:2px;">⏱ ${escapeHtml(item.days || 'Guided adventure')} · 📍 Base to Base</div>
+                ${item.pickup ? `<div style="font-size:12px;color:var(--muted);margin-top:2px;">⏱ ${escapeHtml(item.days || 'Guided adventure')} · 📍 ${escapeHtml(item.pickup)}</div>` : (item.days ? `<div style="font-size:12px;color:var(--muted);margin-top:2px;">⏱ ${escapeHtml(item.days)}</div>` : '')}
               </div>
               <button class="btn-primary mini book-batch-direct-btn" data-batch="${escapeHtml(b)}" style="padding:7px 16px;font-size:12.5px;">Book This Batch ▸</button>
             </div>
@@ -1117,7 +1108,7 @@
             </div>
           ` : ''}
           <div style="margin-top:8px;">⏱ <strong>Duration:</strong> ${escapeHtml(item.days || 'Guided trip')}</div>
-          <div style="margin-top:4px;">📍 <strong>Pick-up:</strong> Ex-Pune / Base village</div>
+          ${item.pickup ? `<div style="margin-top:4px;">📍 <strong>Pick-up / Meeting Point:</strong> ${escapeHtml(item.pickup)}</div>` : ''}
         </div>
         <button class="btn-primary trip-book-cta" id="detailBookBtn">Book This Adventure ▸</button>
         <div class="trip-sidebar-wa">

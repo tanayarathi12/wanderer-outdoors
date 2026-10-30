@@ -90,29 +90,12 @@
           s.subsections = [];
         }
 
-        if(defSec && Array.isArray(defSec.items)){
-          var existingIds = (s.items || []).map(function(x){ return x.id || x.name; });
-          defSec.items.forEach(function(dIt){
-            if(existingIds.indexOf(dIt.id) === -1 && existingIds.indexOf(dIt.name) === -1){
-              (s.items = s.items || []).push(JSON.parse(JSON.stringify(dIt)));
-            }
-          });
-        }
-
-        s.items = (s.items || []).map(function(it){
-          if(defSec && Array.isArray(defSec.items)){
-            var dIt = defSec.items.find(function(x){ return x.id === it.id; });
-            if(dIt){
-              if((!it.batches || !it.batches.length) && dIt.batches && dIt.batches.length){
-                it.batches = dIt.batches.slice();
-              }
-              if(!it.subsection && dIt.subsection){
-                it.subsection = dIt.subsection;
-              }
-            }
-          }
-          return window.WO_normalizeItem ? window.WO_normalizeItem(it) : it;
-        });
+        // NOTE: Default items are NOT auto-inserted here to preserve user deletions.
+        var PURGED_IDS = ['w_kedarkantha','w_brahmatal','w_deoriatal','w_kuari',
+          'w_kids_manali','w_wildlife_ranthambore','w_intl_vietnam'];
+        s.items = (s.items || [])
+          .filter(function(it){ return PURGED_IDS.indexOf(it.id) === -1; })
+          .map(function(it){ return window.WO_normalizeItem ? window.WO_normalizeItem(it) : it; });
         return s;
       });
     }
@@ -858,6 +841,25 @@
             subSelect
           ]));
         }
+
+        // Pick-up / Meeting Point
+        itContent.appendChild(text("Pick-up / Meeting Point (e.g. Ex-Pune, Mumbai Airport, Base village)", item.pickup || "", function(v){ item.pickup = v; markDirty(); }, { placeholder: "e.g. Ex-Pune / Base village" }));
+
+        // Image Display Fit
+        var fitVal = item.imageFit || 'cover';
+        var fitOpts = ['cover', 'contain'].map(function(f){
+          var o = el("option", { value: f }, [f === 'cover' ? 'Cover (fill frame, may crop)' : 'Contain (show full image)']);
+          if (fitVal === f) o.selected = true;
+          return o;
+        });
+        var fitSelect = el("select", {
+          style: { width: "100%", padding: "8px 10px", background: "#0c140f", border: "1px solid #243c2a", borderRadius: "6px", color: "#fff", fontSize: "13px" },
+          onchange: function(e){ item.imageFit = e.target.value; markDirty(); }
+        }, fitOpts);
+        itContent.appendChild(el("div", { style: { margin: "10px 0" } }, [
+          el("label", { style: { display: "block", fontSize: "12.5px", fontWeight: "600", marginBottom: "4px", color: "#6cc28f" } }, ["Cover Image Display Mode"]),
+          fitSelect
+        ]));
 
         // Upcoming Batches / Departure Dates
         var batchStr = (item.batches || []).join("\n");
