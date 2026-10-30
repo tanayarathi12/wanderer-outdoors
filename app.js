@@ -229,18 +229,34 @@
     return sec.kicker || 'Adventure';
   }
 
-  function findTrip(identifier){
+  function findTrip(identifier, preferredSectionKey){
     if(!identifier) return null;
-    for(const sec of allSections()){
+    const sections = allSections();
+    // 1. If preferredSectionKey is passed (e.g. 'winter' in #/winter/:slug), search that section first
+    if(preferredSectionKey){
+      const sec = sections.find(s => s.key === preferredSectionKey || s.id === preferredSectionKey);
+      if(sec && Array.isArray(sec.items)){
+        for(const item of sec.items){
+          if(item.id === identifier || item.slug === identifier) return { item, sec };
+        }
+        const targetSlug = window.WO_slugify ? window.WO_slugify(identifier) : identifier.toLowerCase();
+        for(const item of sec.items){
+          const s = item.slug || (window.WO_slugify ? window.WO_slugify(item.name) : '');
+          if(s === targetSlug) return { item, sec };
+        }
+      }
+    }
+    // 2. Search all sections by exact ID or exact slug
+    for(const sec of sections){
       for(const item of (sec.items || [])){
         if(item.id === identifier || item.slug === identifier) {
           return { item, sec };
         }
       }
     }
-    // Also try fuzzy matching by slugified name
+    // 3. Search all sections by fuzzy slugified name
     const targetSlug = window.WO_slugify ? window.WO_slugify(identifier) : identifier.toLowerCase();
-    for(const sec of allSections()){
+    for(const sec of sections){
       for(const item of (sec.items || [])){
         const s = item.slug || (window.WO_slugify ? window.WO_slugify(item.name) : '');
         if(s === targetSlug) return { item, sec };
@@ -302,7 +318,7 @@
 
     // Handle Trip Detail routes: e.g. /treks/:slug or /trip/:id
     if(parts.length >= 2){
-      const tripMatch = findTrip(parts[1]);
+      const tripMatch = findTrip(parts[1], parts[0]);
       if(tripMatch){
         currentTrip = tripMatch;
         activeView = 'trip-detail';
@@ -818,6 +834,12 @@
     const bookBtn = card.querySelector('[data-action="book-card-item"]');
     if(itemColors.buttonBackground){ detailsBtn.style.backgroundColor=itemColors.buttonBackground; bookBtn.style.backgroundColor=itemColors.buttonBackground; }
     if(itemColors.buttonText){ detailsBtn.style.color=itemColors.buttonText; bookBtn.style.color=itemColors.buttonText; }
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', (e) => {
+      if(e.target.closest('button') || e.target.closest('a')) return;
+      const dest = (item.buttonLinks && item.buttonLinks.details) || '';
+      if(dest) openConfiguredDestination(dest); else navigate(detailRoute);
+    });
     detailsBtn.addEventListener('click', () => {
       const dest = (item.buttonLinks && item.buttonLinks.details) || '';
       if(dest) openConfiguredDestination(dest); else navigate(detailRoute);

@@ -54,8 +54,11 @@
     var id = it.id || h('i');
     var name = it.name || 'Untitled Adventure';
     var slug = it.slug;
-    // Auto-fix mismatched legacy slugs (e.g. if Kedarkantha was renamed to Lakeside Camping):
-    if (!slug || (slug === 'kedarkantha-winter-trek' && it.name && !it.name.toLowerCase().includes('kedarkantha'))) {
+    // Auto-fix mismatched legacy or generic slugs (e.g. multiple items having 'new-adventure' or old default slugs):
+    if (!slug || slug === 'new-adventure' ||
+        (slug === 'kedarkantha-winter-trek' && it.name && !it.name.toLowerCase().includes('kedarkantha')) ||
+        (slug === 'brahmatal-winter-trek' && it.name && !it.name.toLowerCase().includes('brahmatal')) ||
+        (slug === 'deoriatal-chandrashila' && it.name && !it.name.toLowerCase().includes('deoriatal'))) {
       slug = slugify(name) || ('item-' + id);
     }
 

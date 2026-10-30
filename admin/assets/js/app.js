@@ -1095,8 +1095,8 @@ function imageField(label, url, onChange) {
         itContent.appendChild(el("div", { class: "grid2" }, [
           text("Adventure Name", item.name, function (v) {
             item.name = v;
-            // Auto-sync slug if empty or if matching old default
-            if (!item.slug || item.slug === "kedarkantha-winter-trek") {
+            // Auto-sync slug if empty, 'new-adventure', or matching old defaults
+            if (!item.slug || item.slug === "new-adventure" || item.slug === "kedarkantha-winter-trek" || item.slug === "brahmatal-winter-trek" || item.slug === "deoriatal-chandrashila") {
               item.slug = window.WO_slugify ? window.WO_slugify(v) : v.toLowerCase().replace(/[^\w-]/g, "");
               var slugInp = itContent.querySelector("input[data-field='slug']");
               if (slugInp) slugInp.value = item.slug;
@@ -1264,7 +1264,7 @@ function imageField(label, url, onChange) {
       });
 
       itemsWrap.appendChild(el("button", { class: "btn btn-ghost mini", onclick: function () {
-        sec.items.push(window.WO_normalizeItem ? window.WO_normalizeItem({ name: "New Adventure", cost: "1,499", days: "1 day" }) : { name: "New Adventure" });
+        var newTripId = window.WO_newId ? window.WO_newId("i") : ("i_" + Math.random().toString(36).slice(2, 9)); var autoSlug = "adventure-" + newTripId; sec.items.push(window.WO_normalizeItem ? window.WO_normalizeItem({ id: newTripId, name: "New Adventure", slug: autoSlug, cost: "1,499", days: "1 day" }) : { id: newTripId, name: "New Adventure", slug: autoSlug });
         markDirty(); showPanel("sections");
       } }, ["+ Add adventure to " + (sec.title || sec.key)]));
 
