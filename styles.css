@@ -788,8 +788,17 @@ body.is-dark ::-webkit-calendar-picker-indicator{filter:invert(1) opacity(.7)}
 .trip-card-media {
   position: relative;
   height: 220px;
-  background: #253328 center/cover no-repeat;
+  background-color: #253328;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   overflow: hidden;
+}
+.trip-card-media.fit-contain {
+  background-size: contain !important;
+  background-color: #0c140f !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
 }
 .trip-card-media .trip-badge {
   position: absolute;
@@ -874,12 +883,21 @@ body.is-dark ::-webkit-calendar-picker-indicator{filter:invert(1) opacity(.7)}
   border-radius: var(--radius);
   overflow: hidden;
   margin: 14px 0 28px;
-  background: #1a2a20 center/cover no-repeat;
+  background-color: #1a2a20;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   display: flex;
   align-items: flex-end;
   color: #fff;
   padding: 36px 32px;
   box-shadow: var(--shadow-lg);
+}
+.trip-hero.fit-contain {
+  background-size: contain !important;
+  background-color: #0c140f !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
 }
 .trip-hero-overlay {
   position: absolute;

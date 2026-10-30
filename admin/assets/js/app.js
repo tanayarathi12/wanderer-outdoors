@@ -189,7 +189,292 @@
     s.addEventListener("change", function () { onChange(s.value); markDirty(); });
     return field(label, s);
   }
-  function imageField(label, url, onChange) {
+  
+  /* ---------------- Interactive Image Crop & Framing Modal ---------------- */
+  function openCropModal(file, onConfirm) {
+    if (!file || !file.type || !file.type.startsWith("image/")) {
+      return onConfirm(file);
+    }
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      var img = new Image();
+      img.onload = function() {
+        showCropDialog(img, file, onConfirm);
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function showCropDialog(img, file, onConfirm) {
+    var overlay = el("div", {
+      style: {
+        position: "fixed", inset: "0", background: "rgba(5, 10, 7, 0.88)",
+        zIndex: "10000", display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "16px", backdropFilter: "blur(6px)"
+      }
+    });
+
+    var currentRatio = "original"; // "original" | "16:9" | "4:3" | "1:1"
+    var zoom = 1.0;
+    var panX = 0, panY = 0;
+    var isDragging = false;
+    var startX = 0, startY = 0;
+
+    var header = el("div", { style: { marginBottom: "14px" } }, [
+      el("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } }, [
+        el("strong", { style: { fontSize: "16px", color: "#6cc28f" } }, ["✂️ Crop & Framing Options"]),
+        el("button", {
+          class: "btn btn-ghost mini",
+          onclick: function() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }
+        }, ["✕ Close"])
+      ]),
+      el("p", { style: { fontSize: "12.5px", color: "#9fb0a3", margin: "4px 0 0" } }, [
+        "Choose to upload the complete 100% full photo or crop it for cards/hero banners."
+      ])
+    ]);
+
+    var ratioBtns = [
+      { id: "original", label: "Full Original (No Crop)" },
+      { id: "16:9", label: "16:9 Landscape" },
+      { id: "4:3", label: "4:3 Standard" },
+      { id: "1:1", label: "1:1 Square" }
+    ];
+
+    var btnContainer = el("div", { style: { display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "12px" } });
+    var btnEls = {};
+
+    function updateRatioBtns() {
+      ratioBtns.forEach(function(rb) {
+        var b = btnEls[rb.id];
+        if (!b) return;
+        if (currentRatio === rb.id) {
+          b.style.background = "#d9582b";
+          b.style.color = "#fff";
+          b.style.borderColor = "#d9582b";
+        } else {
+          b.style.background = "#19241c";
+          b.style.color = "#cfe0d4";
+          b.style.borderColor = "#2c3e30";
+        }
+      });
+      zoomSlider.disabled = (currentRatio === "original");
+      redraw();
+    }
+
+    ratioBtns.forEach(function(rb) {
+      var b = el("button", {
+        class: "btn mini",
+        type: "button",
+        style: { fontSize: "12px", padding: "6px 12px", border: "1px solid #2c3e30", cursor: "pointer" },
+        onclick: function() {
+          currentRatio = rb.id;
+          panX = 0; panY = 0; zoom = 1.0;
+          zoomSlider.value = "1.0";
+          updateRatioBtns();
+        }
+      }, [rb.label]);
+      btnEls[rb.id] = b;
+      btnContainer.appendChild(b);
+    });
+
+    var canvas = el("canvas", {
+      width: "560",
+      height: "320",
+      style: {
+        width: "100%", maxHeight: "340px", background: "#080c09",
+        borderRadius: "8px", cursor: "grab", display: "block"
+      }
+    });
+
+    var ctx = canvas.getContext("2d");
+
+    function redraw() {
+      var cw = canvas.width;
+      var ch = canvas.height;
+      ctx.clearRect(0, 0, cw, ch);
+
+      if (currentRatio === "original") {
+        var scale = Math.min((cw - 40) / img.width, (ch - 40) / img.height);
+        var dw = img.width * scale;
+        var dh = img.height * scale;
+        var dx = (cw - dw) / 2;
+        var dy = (ch - dh) / 2;
+        ctx.fillStyle = "#0c140f";
+        ctx.fillRect(0, 0, cw, ch);
+        ctx.drawImage(img, dx, dy, dw, dh);
+
+        ctx.strokeStyle = "#25d366";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(dx, dy, dw, dh);
+
+        ctx.fillStyle = "rgba(0,0,0,0.65)";
+        ctx.fillRect(16, ch - 36, cw - 32, 24);
+        ctx.fillStyle = "#6cc28f";
+        ctx.font = "12px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("✓ Full uncropped image will be preserved and uploaded directly", cw / 2, ch - 20);
+        return;
+      }
+
+      var targetRatio = 16 / 9;
+      if (currentRatio === "4:3") targetRatio = 4 / 3;
+      if (currentRatio === "1:1") targetRatio = 1.0;
+
+      var boxW = cw - 60;
+      var boxH = boxW / targetRatio;
+      if (boxH > ch - 40) {
+        boxH = ch - 40;
+        boxW = boxH * targetRatio;
+      }
+      var boxX = (cw - boxW) / 2;
+      var boxY = (ch - boxH) / 2;
+
+      var baseScale = Math.max(boxW / img.width, boxH / img.height) * zoom;
+      var dw = img.width * baseScale;
+      var dh = img.height * baseScale;
+      var dx = boxX + (boxW - dw) / 2 + panX;
+      var dy = boxY + (boxH - dh) / 2 + panY;
+
+      ctx.drawImage(img, dx, dy, dw, dh);
+
+      ctx.fillStyle = "rgba(5, 10, 7, 0.75)";
+      ctx.fillRect(0, 0, cw, boxY);
+      ctx.fillRect(0, boxY + boxH, cw, ch - (boxY + boxH));
+      ctx.fillRect(0, boxY, boxX, boxH);
+      ctx.fillRect(boxX + boxW, boxY, cw - (boxX + boxW), boxH);
+
+      ctx.strokeStyle = "#d9582b";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(boxX, boxY, boxW, boxH);
+
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(boxX + boxW / 3, boxY);
+      ctx.lineTo(boxX + boxW / 3, boxY + boxH);
+      ctx.moveTo(boxX + (boxW * 2) / 3, boxY);
+      ctx.lineTo(boxX + (boxW * 2) / 3, boxY + boxH);
+      ctx.moveTo(boxX, boxY + boxH / 3);
+      ctx.lineTo(boxX + boxW, boxY + boxH / 3);
+      ctx.moveTo(boxX, boxY + (boxH * 2) / 3);
+      ctx.lineTo(boxX + boxW, boxY + (boxH * 2) / 3);
+      ctx.stroke();
+    }
+
+    canvas.addEventListener("mousedown", function(e) {
+      if (currentRatio === "original") return;
+      isDragging = true;
+      startX = e.clientX - panX;
+      startY = e.clientY - panY;
+      canvas.style.cursor = "grabbing";
+    });
+    window.addEventListener("mousemove", function(e) {
+      if (!isDragging) return;
+      panX = e.clientX - startX;
+      panY = e.clientY - startY;
+      redraw();
+    });
+    window.addEventListener("mouseup", function() {
+      if (isDragging) {
+        isDragging = false;
+        canvas.style.cursor = "grab";
+      }
+    });
+
+    var zoomSlider = el("input", {
+      type: "range", min: "0.8", max: "2.5", step: "0.05", value: "1.0",
+      style: { flex: "1", accentColor: "#d9582b" },
+      oninput: function(e) {
+        zoom = parseFloat(e.target.value) || 1.0;
+        redraw();
+      }
+    });
+
+    var zoomRow = el("div", {
+      style: { display: "flex", alignItems: "center", gap: "10px", marginTop: "10px", fontSize: "12px", color: "#9fb0a3" }
+    }, [
+      el("span", {}, ["🔍 Zoom:"]),
+      zoomSlider,
+      el("span", { style: { fontSize: "11px", color: "#6f8474" } }, ["(Drag image to reposition)"])
+    ]);
+
+    var footer = el("div", {
+      style: { display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "16px" }
+    }, [
+      el("button", {
+        class: "btn btn-ghost",
+        type: "button",
+        onclick: function() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }
+      }, ["Cancel"]),
+      el("button", {
+        class: "btn btn-primary",
+        type: "button",
+        onclick: function() {
+          if (currentRatio === "original") {
+            if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+            onConfirm(file);
+            return;
+          }
+
+          var targetRatio = 16 / 9;
+          if (currentRatio === "4:3") targetRatio = 4 / 3;
+          if (currentRatio === "1:1") targetRatio = 1.0;
+
+          var cw = canvas.width;
+          var ch = canvas.height;
+          var boxW = cw - 60;
+          var boxH = boxW / targetRatio;
+          if (boxH > ch - 40) {
+            boxH = ch - 40;
+            boxW = boxH * targetRatio;
+          }
+          var boxX = (cw - boxW) / 2;
+          var boxY = (ch - boxH) / 2;
+
+          var baseScale = Math.max(boxW / img.width, boxH / img.height) * zoom;
+          var dw = img.width * baseScale;
+          var dh = img.height * baseScale;
+          var dx = boxX + (boxW - dw) / 2 + panX;
+          var dy = boxY + (boxH - dh) / 2 + panY;
+
+          var sx = (boxX - dx) / baseScale;
+          var sy = (boxY - dy) / baseScale;
+          var sw = boxW / baseScale;
+          var sh = boxH / baseScale;
+
+          var outW = Math.min(Math.max(1200, sw), 1920);
+          var outH = outW / targetRatio;
+          var outCanvas = document.createElement("canvas");
+          outCanvas.width = outW;
+          outCanvas.height = outH;
+          var outCtx = outCanvas.getContext("2d");
+          outCtx.drawImage(img, sx, sy, sw, sh, 0, 0, outW, outH);
+
+          outCanvas.toBlob(function(blob) {
+            if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+            var safeName = (file.name || "image").replace(/\.[^/.]+$/, "") + "_crop.jpg";
+            var croppedFile = new File([blob], safeName, { type: "image/jpeg" });
+            onConfirm(croppedFile);
+          }, "image/jpeg", 0.92);
+        }
+      }, ["Apply & Upload"])
+    ]);
+
+    var dialog = el("div", {
+      style: {
+        background: "#141f17", border: "1px solid #28422f", borderRadius: "16px",
+        padding: "20px", maxWidth: "600px", width: "100%", boxShadow: "0 24px 64px rgba(0,0,0,0.6)"
+      }
+    }, [header, btnContainer, canvas, zoomRow, footer]);
+
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+
+    updateRatioBtns();
+  }
+
+function imageField(label, url, onChange) {
     var preview = el("img", { class: "thumb", src: url || "", style: { display: url ? "" : "none" } });
     var urlInput = el("input", { type: "text", placeholder: "Image URL (https://…)", value: url || "" });
     var fileInput = el("input", { type: "file", accept: "image/*", style: { display: "none" } });
@@ -201,14 +486,21 @@
       var v = urlInput.value.trim(); onChange(v);
       preview.src = v; preview.style.display = v ? "" : "none";
     });
-    fileInput.addEventListener("change", async function () {
+    fileInput.addEventListener("change", function () {
       var f = fileInput.files && fileInput.files[0];
       if (!f) return;
-      uploadBtn.textContent = "Uploading…";
-      var r = await window.Backend.uploadImage(f);
-      uploadBtn.textContent = "Upload";
-      if (r && r.ok) { onChange(r.url); urlInput.value = r.url; preview.src = r.url; preview.style.display = ""; toast("Image uploaded to site-images storage"); }
-      else toast("Upload failed — " + ((r && r.error) || "check storage bucket") + ". You can paste a URL.", false);
+      fileInput.value = "";
+      openCropModal(f, async function(processedFile) {
+        uploadBtn.textContent = "Uploading…";
+        var r = await window.Backend.uploadImage(processedFile);
+        uploadBtn.textContent = "Upload";
+        if (r && r.ok) {
+          onChange(r.url); urlInput.value = r.url; preview.src = r.url; preview.style.display = "";
+          toast("Image uploaded to site-images storage ✓");
+        } else {
+          toast("Upload failed — " + ((r && r.error) || "check storage bucket") + ". You can paste a URL.", false);
+        }
+      });
     });
     var ctrl = el("div", { class: "controls" }, [urlInput, el("div", { class: "inline" }, [uploadBtn, removeBtn, fileInput])]);
     return field(label, el("div", { class: "imgfield" }, [preview, ctrl]));

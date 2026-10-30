@@ -778,7 +778,7 @@
     const detailRoute = (sec.key || 'treks') + '/' + slug;
 
     card.innerHTML = `
-      <div class="trip-card-media" style="background-image:url('${escapeHtml(coverUrl)}');">
+      <div class="trip-card-media ${item.imageFit === 'contain' ? 'fit-contain' : ''}" style="background-image:url('${escapeHtml(coverUrl)}');">
         ${badgeText ? `<span class="trip-badge">${escapeHtml(badgeText)}</span>` : ''}
       </div>
       <div class="trip-card-body">
@@ -866,12 +866,15 @@
       : (sec.gallery && sec.gallery[0] ? (typeof sec.gallery[0] === 'string' ? sec.gallery[0] : sec.gallery[0].url) : '');
 
     const hero = document.createElement('div');
-    hero.className = 'trip-hero';
-    if(coverUrl) hero.style.backgroundImage = `url('${coverUrl}')`;
-    if(item.imageFit === 'contain'){
-      hero.style.backgroundSize = 'contain';
-      hero.style.backgroundRepeat = 'no-repeat';
-      hero.style.backgroundColor = '#0c140f';
+    hero.className = 'trip-hero' + (item.imageFit === 'contain' ? ' fit-contain' : '');
+    if(coverUrl){
+      hero.style.backgroundImage = `url('${coverUrl}')`;
+      hero.style.cursor = 'pointer';
+      hero.title = 'Click to view full photo';
+      hero.addEventListener('click', (e) => {
+        if(e.target.closest('button') || e.target.closest('a')) return;
+        if(typeof openLightbox === 'function') openLightbox(coverUrl);
+      });
     }
     hero.innerHTML = `
       <div class="trip-hero-overlay"></div>
